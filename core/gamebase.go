@@ -14,13 +14,14 @@ type NodeData struct {
 }
 
 type Node struct {
-	Id         uint64    `json:"id"`
-	Data       *NodeData `json:"data"`
-	Parent     *Node
-	LeftChild  *Node `json:"left_child"`
-	RightChild *Node `json:"right_child"`
-	IsLeader   bool
-	IsLeaf     bool `json:"is_leaf"`
+	Id              uint64    `json:"id"`
+	Data            *NodeData `json:"data"`
+	Parent          *Node
+	LeftChild       *Node `json:"left_child"`
+	RightChild      *Node `json:"right_child"`
+	IsLeader        bool
+	IsLeaf          bool `json:"is_leaf"`
+	CanHoldArtifact bool `json:"can_hold_artifact"`
 }
 
 func (n *Node) FetchLeader() *Node {
