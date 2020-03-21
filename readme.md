@@ -6,9 +6,9 @@
 
 `git clone github.com/supercmmetry/bandersnatch`
 <br>
-<br>
 `cd bandersnatch`
 <br>
+`go mod tidy`
 <br>
 `go run main.go`
 
