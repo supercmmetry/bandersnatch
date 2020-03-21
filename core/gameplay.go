@@ -8,7 +8,7 @@ import (
 
 type Player struct {
 	Id                   uint64
-	ArtifactDistribution map[*Artifact]*Node
+	ArtifactDistribution map[*Node]*Artifact
 	CurrentNode          *Node
 }
 
@@ -59,8 +59,16 @@ func (n *Nexus) Start(p *Player) {
 	// Assign a random leader node to the player.
 	p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
 	// Initialize Artifact-Distribution
-	p.ArtifactDistribution = make(map[*Artifact]*Node)
+
 	n.scrambleArtifacts(p, true)
+}
+
+func (n *Nexus) CheckForArtifact(p *Player) *Artifact{
+	if artifact, ok := p.ArtifactDistribution[p.CurrentNode]; ok {
+		return artifact
+	} else {
+		return nil
+	}
 }
 
 func (n *Nexus) Traverse(p *Player, opt Option) {
@@ -74,6 +82,7 @@ func (n *Nexus) Traverse(p *Player, opt Option) {
 }
 
 func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) {
+	p.ArtifactDistribution = make(map[*Node]*Artifact)
 	// We scramble the artifacts based on their scramble-coefficients.
 	for _, artifact := range n.Artifacts {
 		num := rand.Intn(1000)
@@ -84,7 +93,7 @@ func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) {
 			toughCoeff := 1 - artifact.ScrambleCoefficient
 			nodePath := 1 + int(toughCoeff * float64(rand.Intn(1 + int(n.cMap[leader.Id]))))
 
-			p.ArtifactDistribution[artifact] = p.CurrentNode.GetNodeByNum(nodePath)
+			p.ArtifactDistribution[p.CurrentNode.GetNodeByNum(nodePath)] = artifact
 		}
 	}
 }
