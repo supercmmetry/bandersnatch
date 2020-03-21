@@ -1,60 +1,42 @@
-package core
+package bandersnatch
 
-import (
-	"bandersnatch/pkg"
-	"math/rand"
-)
+import "math/rand"
 
-type GameData struct {
-	VisitedNexusPorts  []*Node
-	CollectedArtifacts uint
+type Player struct {
+	Id                   uint64
+	ArtifactDistribution map[*Artifact]*Node
+	CurrentNode          *Node
 }
 
-type BanderSnatch struct {
-	NexusPorts  []*Node
-	CurrentNode *Node
-	Data        GameData
+type Nexus struct {
+	Leaders   []*Node
+	CMap      map[uint64]uint64
+	Artifacts []*Artifact
 }
 
-func (b *BanderSnatch) Traverse(option bool) error {
-	curr := b.CurrentNode
-	state := curr.State
-	if state.ContainsArtifact {
-		b.Data.CollectedArtifacts++
-		curr.State.ContainsArtifact = false
-	}
+func (n *Nexus) Start(p *Player) {
+	// Assign a random leader node to the player.
+	p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders)-1)]
+	// Initialize Artifact-Distribution
+	n.scrambleArtifacts(p)
+}
 
-	if curr.IsLeaf {
-		if state.LeapToNexus {
-			// todo: Implement Bandersnatch Nexus.
-			// Skip nexus and warp to a random nexus port.
-			b.CurrentNode = b.NexusPorts[rand.Intn(len(b.NexusPorts))]
-			b.Data.VisitedNexusPorts = append(b.Data.VisitedNexusPorts, b.CurrentNode)
-		} else if state.JumpBack {
-			rewindLimit := rand.Intn(BandersnatchRewindLimit)
-			for i := 0; i < rewindLimit; i++ {
-				if b.CurrentNode.IsLeader {
-					break
-				}
-				b.CurrentNode = b.CurrentNode.Parent
-			}
-		} else if state.LeapToNode != nil {
-			b.CurrentNode = state.LeapToNode
-		}
-		return nil
-	}
+func (n *Nexus) Traverse(p *Player, opt Option) {
+	p.CurrentNode.Traverse(opt)
+}
 
-	switch option {
-	case BandersnatchLeft:
-		if b.CurrentNode.LeftChild == nil {
-			return pkg.ErrNilChild
+func (n *Nexus) scrambleArtifacts(p *Player) {
+	// We scramble the artifacts based on their scramble-coefficients.
+	for _, artifact := range n.Artifacts {
+		num := rand.Intn(1000)
+		if num >= int(1000 * artifact.ScrambleCoefficient) {
+
+			leader := p.CurrentNode.FetchLeader()
+
+			toughCoeff := 1 - artifact.ScrambleCoefficient
+			nodePath := int(toughCoeff * float64(rand.Intn(int(n.CMap[leader.Id]))))
+
+			p.ArtifactDistribution[artifact] = p.CurrentNode.GetNodeByNum(nodePath)
 		}
-		b.CurrentNode = b.CurrentNode.LeftChild
-	case BandersnatchRight:
-		if b.CurrentNode.RightChild == nil {
-			return pkg.ErrNilChild
-		}
-		b.CurrentNode = b.CurrentNode.RightChild
 	}
-	return nil
 }
