@@ -25,7 +25,6 @@ func main() {
 		opt = opt[:1]
 		if opt == "1" {
 			nexus.Traverse(p, bs.OptionLeft)
-
 		} else if opt == "2" {
 			nexus.Traverse(p, bs.OptionRight)
 		} else {
