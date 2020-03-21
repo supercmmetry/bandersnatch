@@ -1,25 +1,26 @@
 package bandersnatch
 
 type Option uint
+
 const (
 	OptionLeft Option = iota
 	OptionRight
 )
 
 type NodeData struct {
-	Question    string
-	LeftOption  string
-	RightOption string
+	Question    string `json:"question"`
+	LeftOption  string `json:"left_option"`
+	RightOption string `json:"right_option"`
 }
 
 type Node struct {
-	Id         uint64
-	Data       *NodeData
+	Id         uint64    `json:"id"`
+	Data       *NodeData `json:"data"`
 	Parent     *Node
-	LeftChild  *Node
-	RightChild *Node
+	LeftChild  *Node `json:"left_child"`
+	RightChild *Node `json:"right_child"`
 	IsLeader   bool
-	IsLeaf     bool
+	IsLeaf     bool `json:"is_leaf"`
 }
 
 func (n *Node) FetchLeader() *Node {
@@ -30,32 +31,34 @@ func (n *Node) FetchLeader() *Node {
 	return curr
 }
 
-func (n *Node) Traverse(opt Option) {
+func (n *Node) Traverse(opt Option) *Node {
 	if opt == OptionLeft {
-		*n = *n.LeftChild
+		return n.LeftChild
 	} else {
-		*n = *n.RightChild
+		return n.RightChild
 	}
 }
 
 func (n *Node) GetNodeByNum(num int) *Node {
-	newNode := n
-	for num != 0 && !newNode.IsLeaf{
-		lsb := num & 1
-		if lsb == 1 {
-			newNode = newNode.RightChild
-		} else {
-			newNode = newNode.LeftChild
+	curr := n
+	queue := make([]*Node, 0)
+	queue = append(queue, curr)
+	for len(queue) > 0 && num >= 0 {
+		curr = queue[0]
+		queue = queue[1:]
+		num--
+		if curr.LeftChild != nil {
+			queue = append(queue, curr.LeftChild)
 		}
-
-		num >>= 1
+		if curr.RightChild != nil {
+			queue = append(queue, curr.RightChild)
+		}
 	}
-
-	return newNode
+	return curr
 }
 
 type Artifact struct {
-	Id                  uint64
-	ScrambleCoefficient float64
-	Description         string
+	Id                  uint64  `json:"id"`
+	ScrambleCoefficient float64 `json:"scramble_coeff"`
+	Description         string  `json:"description"`
 }
