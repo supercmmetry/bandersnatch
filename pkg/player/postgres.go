@@ -10,7 +10,7 @@ type repo struct {
 	DB *gorm.DB
 }
 
-func (r *repo) AddPlayer(player *entities.Player) error {
+func (r *repo) SignUp(player *entities.Player) error {
 	tx := r.DB.Begin()
 
 	if err := tx.Where("email = ?", player.Email).Find(&entities.Player{}).Error; err == nil {
@@ -24,6 +24,21 @@ func (r *repo) AddPlayer(player *entities.Player) error {
 		tx.Commit()
 	} else {
 		return err
+	}
+
+	return nil
+}
+
+func (r *repo) SignIn(p *entities.Player) error {
+	tx := r.DB.Begin()
+
+	if err := tx.Where("email = ? and password = ?", p.Email, p.Password).Find(p).Error; err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			return pkg.ErrNotFound
+		default:
+			return pkg.ErrDatabase
+		}
 	}
 
 	return nil

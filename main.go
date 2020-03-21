@@ -1,20 +1,20 @@
 package main
 
 import (
-	bs "bandersnatch/core"
+	"bandersnatch/pkg/game"
 	"bufio"
 	"fmt"
 	"os"
 )
 
 func main() {
-	fmt.Println("Bandersnatch (Dynamically Randomized State Automaton)")
-	nexus := &bs.Nexus{}
+	fmt.Println("Bandersnatch: A Dynamically Randomized State Automaton (a.k.a DYRASTAT)")
+	nexus := &game.Nexus{}
 	if err := nexus.LoadFromFile("sample.json"); err != nil {
 		fmt.Println(err)
 	}
 
-	p := &bs.Player{Id:1729}
+	p := &game.Player{Id: 1729}
 	nexus.Start(p)
 	r := bufio.NewReader(os.Stdin)
 	for true {
@@ -24,9 +24,9 @@ func main() {
 		opt, _ := r.ReadString('\n')
 		opt = opt[:1]
 		if opt == "1" {
-			nexus.Traverse(p, bs.OptionLeft)
+			nexus.Traverse(p, game.OptionLeft)
 		} else if opt == "2" {
-			nexus.Traverse(p, bs.OptionRight)
+			nexus.Traverse(p, game.OptionRight)
 		} else {
 			break
 		}

@@ -1,4 +1,4 @@
-package bandersnatch
+package game
 
 type Option uint
 

@@ -1,4 +1,4 @@
-package bandersnatch
+package game
 
 import (
 	"encoding/json"
@@ -14,8 +14,8 @@ type Player struct {
 }
 
 type Nexus struct {
-	Leaders       []*Node `json:"leaders"`
-	Artifacts     []*Artifact `json:"artifacts"`
+	Leaders       []*Node           `json:"leaders"`
+	Artifacts     []*Artifact       `json:"artifacts"`
 	artifactNodes map[*Node][]*Node // maps a leader node to a list of potential artifact nodes under the leader node.
 }
 

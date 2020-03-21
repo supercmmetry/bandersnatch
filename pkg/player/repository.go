@@ -5,6 +5,7 @@ import (
 )
 
 type Repository interface {
-	AddPlayer(p *entities.Player) error
+	SignUp(p *entities.Player) error
+	SignIn(p *entities.Player) error
 	Find(email string) (*entities.Player, error)
 }
