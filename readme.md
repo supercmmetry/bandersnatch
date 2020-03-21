@@ -4,7 +4,7 @@
 <br>
 <h4> Steps to use </h4>
 
-`git clone github.com/supecmmetry/bandersnatch`
+`git clone github.com/supercmmetry/bandersnatch`
 <br>
 <br>
 `cd bandersnatch`
