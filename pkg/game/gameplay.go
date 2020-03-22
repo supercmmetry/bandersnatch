@@ -15,7 +15,8 @@ type Player struct {
 }
 
 type Nexus struct {
-	Leaders       []*Node `json:"leaders"`
+	Leaders       []*Node
+	Nodes         []*Node `json:"nodes"`
 	Players       map[uint64]*Player
 	Artifacts     []*Artifact       `json:"artifacts"`
 	artifactNodes map[*Node][]*Node // maps a leader node to a list of potential artifact nodes under the leader node.
@@ -31,9 +32,32 @@ func (n *Nexus) LoadFromFile(filename string) error {
 		return err
 	}
 
+	n.createDyraStat()
 	n.generateArtifactNodes()
 	n.Players = make(map[uint64]*Player)
 	return nil
+}
+
+func (n *Nexus) createDyraStat() {
+	// we iterate through each node in the nexus to generate a dyrastat
+	nodeMap := make(map[uint64]*Node)
+	for _, node := range n.Nodes {
+		nodeMap[node.Id] = node
+	}
+
+	for _, node := range nodeMap {
+		if node.IsLeader {
+			n.Leaders = append(n.Leaders, node)
+		}
+		if node.LeftNodeId != 0 {
+			node.LeftChild = nodeMap[node.LeftNodeId]
+			node.LeftChild.Parent = node
+		}
+		if node.RightNodeId != 0 {
+			node.RightChild = nodeMap[node.RightNodeId]
+			node.RightChild.Parent = node
+		}
+	}
 }
 
 func (n *Nexus) generateArtifactNodes() {

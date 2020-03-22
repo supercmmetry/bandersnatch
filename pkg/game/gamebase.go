@@ -17,9 +17,11 @@ type Node struct {
 	Id              uint64    `json:"id"`
 	Data            *NodeData `json:"data"`
 	Parent          *Node
-	LeftChild       *Node `json:"left_child"`
-	RightChild      *Node `json:"right_child"`
-	IsLeader        bool
+	LeftChild       *Node
+	RightChild      *Node
+	LeftNodeId      uint64 `json:"left_node"`
+	RightNodeId     uint64 `json:"right_node"`
+	IsLeader        bool `json:"is_leader"`
 	IsLeaf          bool `json:"is_leaf"`
 	CanHoldArtifact bool `json:"can_hold_artifact"`
 }
@@ -44,9 +46,15 @@ func (n *Node) GetNodeByNum(num int) *Node {
 	curr := n
 	queue := make([]*Node, 0)
 	queue = append(queue, curr)
+	visited := make(map[uint64]struct{})
 	for len(queue) > 0 && num >= 0 {
 		curr = queue[0]
 		queue = queue[1:]
+		if _, ok := visited[curr.Id]; ok {
+			continue
+		}
+		visited[curr.Id] = struct{}{}
+
 		num--
 		if curr.LeftChild != nil {
 			queue = append(queue, curr.LeftChild)

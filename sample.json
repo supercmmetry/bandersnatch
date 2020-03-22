@@ -1,61 +1,65 @@
 {
-  "leaders": [
+  "nodes": [
     {
-      "id": 0,
+      "id": 1,
       "data": {
         "question": "There is a death-note in front of you. What will you do ?",
         "left_option": "Leave it there.",
         "right_option": "Take it."
       },
-      "left_child": {
-        "id": 1,
-        "data": {
-          "question": "Where do you want to go now ?",
-          "left_option": "Home",
-          "right_option": "School"
-        },
-        "is_leaf": true
+      "left_node": 2,
+      "right_node": 3,
+      "is_leader": true
+    },
+    {
+      "id": 2,
+      "data": {
+        "question": "Where do you want to go now ?",
+        "left_option": "Home",
+        "right_option": "School"
       },
-      "right_child": {
-        "id": 2,
-        "data": {
-          "question": "The death note says, if you write anyone's name on it, the mentioned person shall die of an heart attack.",
-          "left_option": "Write a name.",
-          "right_option": "Throw the notebook away."
-        },
-        "is_leaf": true,
-        "can_hold_artifact": true
-      },
-      "is_leaf": false
+      "is_leaf": true
     },
     {
       "id": 3,
+      "data": {
+        "question": "The death note says, if you write anyone's name on it, the mentioned person shall die of an heart attack.",
+        "left_option": "Write a name.",
+        "right_option": "Throw the notebook away."
+      },
+      "is_leaf": true,
+      "can_hold_artifact": true
+    },
+    {
+      "id": 4,
       "data": {
         "question": "People are dying of heart attacks without any plausible reason. L has requested you to investigate this singularity. What will you do ?",
         "left_option": "Start investigating.",
         "right_option": "Turn down the request."
       },
-      "left_child": {
-        "id": 4,
-        "data": {
-          "question": "It seems as though the unexpected deaths happen after school hours. What will you do ?",
-          "left_option": "Investigate in schools.",
-          "right_option": "Search for more clues."
-        },
-        "is_leaf": true,
-        "can_hold_artifact": true
+      "is_leader": true,
+      "left_node": 5,
+      "right_node": 6
+    },
+    {
+      "id": 5,
+      "data": {
+        "question": "It seems as though the unexpected deaths happen after school hours. What will you do ?",
+        "left_option": "Investigate in schools.",
+        "right_option": "Search for more clues."
       },
-      "right_child": {
-        "id": 5,
-        "data": {
-          "question": "You are in school right now. You find Lite Yagami to be writing something in a very rusty notebook. What will you do ?",
-          "left_option": "Ask Lite Yagami about what he is writing.",
-          "right_option": "Sneak up from behind and observe what he is writing."
-        },
-        "is_leaf": true,
-        "can_hold_artifact": true
+      "is_leaf": true,
+      "can_hold_artifact": true
+    },
+    {
+      "id": 6,
+      "data": {
+        "question": "You are in school right now. You find Lite Yagami to be writing something in a very rusty notebook. What will you do ?",
+        "left_option": "Ask Lite Yagami about what he is writing.",
+        "right_option": "Sneak up from behind and observe what he is writing."
       },
-      "is_leaf": false
+      "is_leaf": true,
+      "can_hold_artifact": true
     }
   ],
   "artifacts": [
