@@ -2,13 +2,14 @@ package player
 
 import (
 	"bandersnatch/api/middleware"
+	"bandersnatch/pkg"
 	"bandersnatch/pkg/entities"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
-	repo repo
+	repo Repository
 }
 
 func (s *Service) SignUp(p *entities.Player) (*jwt.Token, error) {
@@ -17,35 +18,41 @@ func (s *Service) SignUp(p *entities.Player) (*jwt.Token, error) {
 		return nil, err
 	}
 
-	p.Password = string(passHash)
-	token := middleware.Token{Email: p.Email, Password: p.Password}
-	tk := jwt.NewWithClaims(jwt.SigningMethodHS512, token)
 
+
+	p.Password = string(passHash)
 	err = s.repo.SignUp(p)
 	if err != nil {
 		return nil, err
 	}
 
+
+	token := middleware.Token{Email: p.Email, Id: p.Id}
+	tk := jwt.NewWithClaims(jwt.SigningMethodHS512, token)
+
 	return tk, nil
 }
 
 func (s *Service) SignIn(p *entities.Player) (*jwt.Token, error) {
-	passHash, err := bcrypt.GenerateFromPassword([]byte(p.Password), bcrypt.DefaultCost)
+	player, err := s.repo.Find(p.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	p.Password = string(passHash)
-	token := middleware.Token{Email: p.Email, Password: p.Password}
+	if err := bcrypt.CompareHashAndPassword([]byte(player.Password), []byte(p.Password)); err != nil {
+		return nil, pkg.ErrNotFound
+	}
+
+	token := middleware.Token{Email: player.Email, Id: player.Id}
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS512, token)
 
-	return tk, s.repo.SignIn(p)
+	return tk, nil
 }
 
 func (s *Service) Find(email string) (*entities.Player, error) {
 	return s.repo.Find(email)
 }
 
-func NewService(r repo) Service {
-	return Service{repo: r}
+func NewService(r Repository) *Service {
+	return &Service{repo: r}
 }

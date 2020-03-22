@@ -1,9 +1,17 @@
 package main
 
 import (
+	"bandersnatch/api/handlers"
+	"bandersnatch/pkg/entities"
 	"bandersnatch/pkg/game"
-	"bufio"
+	"bandersnatch/pkg/player"
 	"fmt"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/joho/godotenv"
+	"github.com/julienschmidt/httprouter"
+	"github.com/lib/pq"
+	"net/http"
 	"os"
 )
 
@@ -14,26 +22,47 @@ func main() {
 		fmt.Println(err)
 	}
 
-	p := &game.Player{Id: 1729}
-	nexus.Start(p)
-	r := bufio.NewReader(os.Stdin)
-	for true {
-		fmt.Println(p.CurrentNode.Data.Question)
-		fmt.Println("1.", p.CurrentNode.Data.LeftOption)
-		fmt.Println("2.", p.CurrentNode.Data.RightOption)
-		opt, _ := r.ReadString('\n')
-		opt = opt[:1]
-		if opt == "1" {
-			nexus.Traverse(p, game.OptionLeft)
-		} else if opt == "2" {
-			nexus.Traverse(p, game.OptionRight)
-		} else {
-			break
-		}
-
-		if artifact := nexus.CheckForArtifact(p); artifact != nil {
-			fmt.Println("You found a bandersnatch-artifact.")
-			fmt.Println("Artifact description: ", artifact.Description)
-		}
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
 	}
+
+	conn, err := pq.ParseURL(os.Getenv("DB_URI"))
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	db, err := gorm.Open("postgres", conn)
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	db = db.Debug()
+	db.AutoMigrate(&entities.Player{})
+
+	playerRepo := player.NewPostgresRepo(db)
+
+	playerSvc := player.NewService(playerRepo)
+	gameSvc := game.NewService(nexus)
+
+	r := httprouter.New()
+	handlers.MakePlayerHandlers(r, playerSvc)
+	handlers.MakeGameHandlers(r, playerSvc, gameSvc)
+
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "1729"
+	}
+
+	fmt.Println("Bandersnatch server up and running ...")
+	err = http.ListenAndServe(fmt.Sprintf(":%s", port), r)
+	if err != nil {
+		panic(err)
+		return
+	}
+
+
 }

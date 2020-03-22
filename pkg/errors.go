@@ -7,4 +7,5 @@ var (
 	ErrAlreadyExists = errors.New("the resource already exists")
 	ErrDatabase = errors.New("error occured in database")
 	ErrNotFound = errors.New("record not found")
+	ErrInvalidOperation = errors.New("invalid operation")
 )

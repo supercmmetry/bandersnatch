@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bandersnatch/pkg/game"
 	"encoding/json"
 	"net/http"
 )
@@ -18,6 +19,14 @@ func JsonifyHeader(w http.ResponseWriter) {
 func Wrap(w http.ResponseWriter, v map[string]interface{}) {
 	JsonifyHeader(w)
 	_ = json.NewEncoder(w).Encode(v)
+}
+
+func OptionTypeCast(x float64) game.Option {
+	if x == 0 {
+		return game.OptionLeft
+	} else {
+		return game.OptionRight
+	}
 }
 
 

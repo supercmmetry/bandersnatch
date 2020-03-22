@@ -37,6 +37,7 @@ func SignUp(playerSvc *player.Service) http.HandlerFunc {
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		api.Wrap(w, map[string]interface{}{"token": tkString, "id": p.Id})
 	}
 }
@@ -54,7 +55,7 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 			return
 		}
 
-		p, err := playerSvc.Find(p.Email)
+		_, err := playerSvc.Find(p.Email)
 		if err != nil {
 			switch err {
 			case pkg.ErrNotFound:
@@ -82,11 +83,12 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 			return
 		}
 
+		w.WriteHeader(http.StatusOK)
 		api.Wrap(w, map[string]interface{}{"token": tkString, "id": p.Id})
 	}
 }
 
-func MakeHandler(router *httprouter.Router, playerSvc *player.Service) {
+func MakePlayerHandlers(router *httprouter.Router, playerSvc *player.Service) {
 	router.HandlerFunc("POST", "/api/bandersnatch/signup", SignUp(playerSvc))
 	router.HandlerFunc("POST", "/api/bandersnatch/signin", SignIn(playerSvc))
 }

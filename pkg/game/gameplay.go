@@ -14,7 +14,8 @@ type Player struct {
 }
 
 type Nexus struct {
-	Leaders       []*Node           `json:"leaders"`
+	Leaders       []*Node `json:"leaders"`
+	Players       map[uint64]*Player
 	Artifacts     []*Artifact       `json:"artifacts"`
 	artifactNodes map[*Node][]*Node // maps a leader node to a list of potential artifact nodes under the leader node.
 }
@@ -30,6 +31,7 @@ func (n *Nexus) LoadFromFile(filename string) error {
 	}
 
 	n.generateArtifactNodes()
+	n.Players = make(map[uint64]*Player)
 	return nil
 }
 
@@ -56,19 +58,23 @@ func (n *Nexus) generateArtifactNodes() {
 	}
 }
 
-
 func (n *Nexus) Start(p *Player) {
+	n.Players[p.Id] = &Player{Id: p.Id}
+	*p = *n.Players[p.Id]
 	// Assign a random leader node to the player.
 	p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
 	p.CollectedArtifacts = make(map[*Artifact]struct{})
 	// Initialize Artifact-Distribution
-
+	*n.Players[p.Id] = *p
 	n.scrambleArtifacts(p, true)
 }
 
 func (n *Nexus) CheckForArtifact(p *Player) *Artifact {
+	// This is done to prevent game-state injection
+	*p = *n.Players[p.Id]
 	if artifact, ok := p.ArtifactDistribution[p.CurrentNode]; ok {
 		p.CollectedArtifacts[artifact] = struct{}{}
+		*n.Players[p.Id] = *p
 		return artifact
 	} else {
 		return nil
@@ -76,17 +82,20 @@ func (n *Nexus) CheckForArtifact(p *Player) *Artifact {
 }
 
 func (n *Nexus) Traverse(p *Player, opt Option) {
+	*p = *n.Players[p.Id]
 	if p.CurrentNode.IsLeaf {
 		p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
+		*n.Players[p.Id] = *p
 		n.scrambleArtifacts(p, false)
 	} else {
 		p.CurrentNode = p.CurrentNode.Traverse(opt)
 	}
-
+	*n.Players[p.Id] = *p
 	n.CheckForArtifact(p)
 }
 
 func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) {
+	*p = *n.Players[p.Id]
 	p.ArtifactDistribution = make(map[*Node]*Artifact)
 	// We scramble the artifacts based on their scramble-coefficients.
 	for _, artifact := range n.Artifacts {
@@ -102,4 +111,5 @@ func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) {
 			break
 		}
 	}
+	*n.Players[p.Id] = *p
 }

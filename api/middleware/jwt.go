@@ -9,15 +9,15 @@ import (
 )
 
 type Token struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email string `json:"email"`
+	Id    uint64 `json:"id"`
 	jwt.StandardClaims
 }
 
 type JwtContextKey string
 
 func JwtAuth(next http.Handler) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		tokenHeader := r.Header.Get("Authorization")
 		if tokenHeader == "" {
 			api.RespWrap(w, http.StatusForbidden, "auth token missing")
@@ -25,7 +25,7 @@ func JwtAuth(next http.Handler) http.HandlerFunc {
 		}
 
 		tk := &Token{}
-		token, err := jwt.ParseWithClaims(tokenHeader, tk, func (t *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenHeader, tk, func(t *jwt.Token) (interface{}, error) {
 			return []byte(os.Getenv("JWT_PASSWORD")), nil
 		})
 

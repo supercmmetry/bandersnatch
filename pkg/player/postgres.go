@@ -13,7 +13,7 @@ type repo struct {
 func (r *repo) SignUp(player *entities.Player) error {
 	tx := r.DB.Begin()
 
-	if err := tx.Where("email = ?", player.Email).Find(&entities.Player{}).Error; err == nil {
+	if err := tx.Where("email = ?", player.Email).Find(player).Error; err == nil {
 		return pkg.ErrAlreadyExists
 	} else if err == gorm.ErrRecordNotFound {
 		if err := tx.Save(player).Error; err != nil {
@@ -26,20 +26,11 @@ func (r *repo) SignUp(player *entities.Player) error {
 		return err
 	}
 
-	return nil
-}
-
-func (r *repo) SignIn(p *entities.Player) error {
-	tx := r.DB.Begin()
-
-	if err := tx.Where("email = ? and password = ?", p.Email, p.Password).Find(p).Error; err != nil {
-		switch err {
-		case gorm.ErrRecordNotFound:
-			return pkg.ErrNotFound
-		default:
-			return pkg.ErrDatabase
-		}
+	p, err := r.Find(player.Email)
+	if err != nil {
+		return err
 	}
+	*player = *p
 
 	return nil
 }
@@ -49,7 +40,7 @@ func (r *repo) Find(email string) (*entities.Player, error) {
 	p := &entities.Player{}
 
 	if err := tx.Where("email = ?", email).Find(p).Error; err != nil {
-		return nil, err
+		return nil, pkg.ErrNotFound
 	}
 
 	return p, nil
