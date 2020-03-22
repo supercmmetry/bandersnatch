@@ -7,12 +7,40 @@
 <h4> Steps to use </h4>
 
 
-
+- Clone the repository
+<br>
 `git clone github.com/supercmmetry/bandersnatch`
+<br>
+<br>
+- Change your working directory
 <br>
 `cd bandersnatch`
 <br>
+<br>
+- Create a .env file with necessary key-value pairs.
+<br>
+<br>
+| Key          	| Value                                                                                 	|
+|--------------	|---------------------------------------------------------------------------------------	|
+| DB_URI       	| "postgresql://localhost/bandersnatch?user=postgres&password=postgres&sslmode=disable" 	|
+| DEBUG        	| "true"                                                                                	|
+| PORT         	| "1729"                                                                                	|
+| JWT_PASSWORD 	| "password"                                                                            	|
+| NEXUS_FILE   	| "sample.json"                                                                         	|
+
+
+- Manage your go modules
+<br>
 `go mod tidy`
 <br>
+<br>
+- Create a database in postgresql
+<br>
+<br>
+- Run your go program
+<br>
 `go run main.go`
+<br>
+<br>
+
 

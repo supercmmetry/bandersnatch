@@ -36,8 +36,14 @@ func (n *Node) FetchLeader() *Node {
 
 func (n *Node) Traverse(opt Option) *Node {
 	if opt == OptionLeft {
+		if n.LeftChild == nil {
+			return n.RightChild
+		}
 		return n.LeftChild
 	} else {
+		if n.RightChild == nil {
+			return n.LeftChild
+		}
 		return n.RightChild
 	}
 }

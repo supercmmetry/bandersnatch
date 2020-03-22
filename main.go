@@ -62,7 +62,7 @@ func initNegroni() *negroni.Negroni {
 func main() {
 	utils.PrintAsciiArt()
 	nexus := &game.Nexus{}
-	if err := nexus.LoadFromFile("sample.json"); err != nil {
+	if err := nexus.LoadFromFile(os.Getenv("NEXUS_FILE")); err != nil {
 		fmt.Println(err)
 	}
 
