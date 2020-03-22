@@ -1,6 +1,7 @@
 package game
 
 import (
+	"bandersnatch/pkg"
 	"encoding/json"
 	"math/rand"
 	"os"
@@ -83,7 +84,7 @@ func (n *Nexus) generateArtifactNodes() {
 	}
 }
 
-func (n *Nexus) Start(p *Player) {
+func (n *Nexus) Start(p *Player) error {
 	n.Players[p.Id] = &Player{Id: p.Id}
 	*p = *n.Players[p.Id]
 	// Assign a random leader node to the player.
@@ -92,7 +93,7 @@ func (n *Nexus) Start(p *Player) {
 	p.CollectedArtifacts = make(map[*Artifact]struct{})
 	// Initialize Artifact-Distribution
 	*n.Players[p.Id] = *p
-	n.scrambleArtifacts(p, true)
+	return n.scrambleArtifacts(p, true)
 }
 
 func (n *Nexus) CheckForArtifact(p *Player) *Artifact {
@@ -108,20 +109,40 @@ func (n *Nexus) CheckForArtifact(p *Player) *Artifact {
 	}
 }
 
-func (n *Nexus) Traverse(p *Player, opt Option) {
+func (n *Nexus) Traverse(p *Player, opt Option) error {
+	if p == nil {
+		return pkg.ErrNilNode
+	}
+
+	if _, ok := n.Players[p.Id]; !ok {
+		return pkg.ErrNilNode
+	}
+
 	*p = *n.Players[p.Id]
 	if p.CurrentNode.IsLeaf {
 		p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
 		*n.Players[p.Id] = *p
-		n.scrambleArtifacts(p, false)
+		if err := n.scrambleArtifacts(p, false); err != nil {
+			return err
+		}
 	} else {
 		p.CurrentNode = p.CurrentNode.Traverse(opt)
 	}
 	*n.Players[p.Id] = *p
 	n.CheckForArtifact(p)
+
+	return nil
 }
 
-func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) {
+func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) error {
+	if p == nil {
+		return pkg.ErrNilNode
+	}
+
+	if _, ok := n.Players[p.Id]; !ok {
+		return pkg.ErrNilNode
+	}
+
 	*p = *n.Players[p.Id]
 	p.ArtifactDistribution = make(map[*Node]*Artifact)
 	// We scramble the artifacts based on their scramble-coefficients.
@@ -139,4 +160,5 @@ func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) {
 		}
 	}
 	*n.Players[p.Id] = *p
+	return nil
 }

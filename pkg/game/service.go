@@ -13,17 +13,21 @@ func NewService(n *Nexus) *Service {
 	return &Service{nexus: n}
 }
 
-func (s *Service) StartGame(p *entities.Player) *NodeData {
+func (s *Service) StartGame(p *entities.Player) (*NodeData, error) {
 	player := &Player{Id: p.Id}
-	s.nexus.Start(player)
-	return player.CurrentNode.Data
+	if err := s.nexus.Start(player); err != nil {
+		return nil, err
+	}
+	return player.CurrentNode.Data, nil
 }
 
 func (s *Service) Play(p *Player, opt Option) (*NodeData, error) {
 	if opt != OptionLeft && opt != OptionRight {
 		return nil, pkg.ErrInvalidOperation
 	}
-	s.nexus.Traverse(p, opt)
+	if err := s.nexus.Traverse(p, opt); err != nil {
+		return nil, err
+	}
 	return p.CurrentNode.Data, nil
 }
 

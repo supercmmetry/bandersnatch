@@ -26,7 +26,11 @@ func StartGame(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFun
 			return
 		}
 
-		data := gameSvc.StartGame(p)
+		data, err := gameSvc.StartGame(p)
+		if err != nil {
+			utils.RespWrap(w, http.StatusForbidden, err.Error())
+			return
+		}
 
 		w.WriteHeader(http.StatusOK)
 		utils.Wrap(w, map[string]interface{}{"data": data})
