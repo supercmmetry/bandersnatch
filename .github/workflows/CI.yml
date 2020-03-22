@@ -1,0 +1,27 @@
+name: Push To Package Registry
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  publish_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Setup docker
+        uses: docker-practice/actions-setup-docker@0.0.1
+
+      - name: Publish to Registry
+        env:
+          DOCKER_USERNAME: ${{ github.actor }}
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+        run: |
+          docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+          docker image build -t supercmmetry/bandersnatch:latest -f ./ops/images/go.Dockerfile .
+          docker push supercmmetry/bandersnatch:latest
