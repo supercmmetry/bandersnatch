@@ -75,7 +75,7 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		api.Wrap(w, map[string]interface{}{"data": data, "artifacts": artifacts})
+		api.Wrap(w, map[string]interface{}{"data": data, "artifacts": artifacts, "score": pl.TotalScore})
 	}
 }
 

@@ -11,6 +11,7 @@ type Player struct {
 	ArtifactDistribution map[*Node]*Artifact
 	CurrentNode          *Node
 	CollectedArtifacts   map[*Artifact]struct{}
+	TotalScore           uint64
 }
 
 type Nexus struct {
@@ -62,6 +63,7 @@ func (n *Nexus) Start(p *Player) {
 	n.Players[p.Id] = &Player{Id: p.Id}
 	*p = *n.Players[p.Id]
 	// Assign a random leader node to the player.
+	p.TotalScore = 0
 	p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
 	p.CollectedArtifacts = make(map[*Artifact]struct{})
 	// Initialize Artifact-Distribution
@@ -74,6 +76,7 @@ func (n *Nexus) CheckForArtifact(p *Player) *Artifact {
 	*p = *n.Players[p.Id]
 	if artifact, ok := p.ArtifactDistribution[p.CurrentNode]; ok {
 		p.CollectedArtifacts[artifact] = struct{}{}
+		p.TotalScore += uint64(100 * artifact.ScrambleCoefficient)
 		*n.Players[p.Id] = *p
 		return artifact
 	} else {

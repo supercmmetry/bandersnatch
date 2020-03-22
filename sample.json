@@ -63,6 +63,11 @@
       "id": 0,
       "scramble_coeff": 0.25,
       "description": "1337-h@@x"
+    },
+    {
+      "id": 1,
+      "scramble_coeff": 0.4,
+      "description": "spotify-superuser"
     }
   ]
 }
