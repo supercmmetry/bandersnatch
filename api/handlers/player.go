@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"bandersnatch/api"
 	"bandersnatch/pkg"
 	"bandersnatch/pkg/entities"
 	"bandersnatch/pkg/player"
+	"bandersnatch/utils"
 	"encoding/json"
 	"github.com/badoux/checkmail"
 	"github.com/julienschmidt/httprouter"
@@ -16,29 +16,29 @@ func SignUp(playerSvc *player.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p := &entities.Player{}
 		if err := json.NewDecoder(r.Body).Decode(p); err != nil {
-			api.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		if err := checkmail.ValidateFormat(p.Email); err != nil {
-			api.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		token, err := playerSvc.SignUp(p)
 		if err != nil {
-			api.RespWrap(w, http.StatusConflict, err.Error())
+			utils.RespWrap(w, http.StatusConflict, err.Error())
 			return
 		}
 
 		tkString, err := token.SignedString([]byte(os.Getenv("JWT_PASSWORD")))
 		if err != nil {
-			api.RespWrap(w, http.StatusInternalServerError, err.Error())
+			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		api.Wrap(w, map[string]interface{}{"token": tkString, "id": p.Id})
+		utils.Wrap(w, map[string]interface{}{"token": tkString})
 	}
 }
 
@@ -46,12 +46,12 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		p := &entities.Player{}
 		if err := json.NewDecoder(r.Body).Decode(p); err != nil {
-			api.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		if err := checkmail.ValidateFormat(p.Email); err != nil {
-			api.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
@@ -59,9 +59,9 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 		if err != nil {
 			switch err {
 			case pkg.ErrNotFound:
-				api.RespWrap(w, http.StatusUnauthorized, "the email does not exist")
+				utils.RespWrap(w, http.StatusUnauthorized, "the email does not exist")
 			default:
-				api.RespWrap(w, http.StatusInternalServerError, err.Error())
+				utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			}
 			return
 		}
@@ -70,21 +70,21 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 		if err != nil {
 			switch err {
 			case pkg.ErrNotFound:
-				api.RespWrap(w, http.StatusUnauthorized, "incorrect password")
+				utils.RespWrap(w, http.StatusUnauthorized, "incorrect password")
 			default:
-				api.RespWrap(w, http.StatusInternalServerError, err.Error())
+				utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			}
 			return
 		}
 
 		tkString, err := token.SignedString([]byte(os.Getenv("JWT_PASSWORD")))
 		if err != nil {
-			api.RespWrap(w, http.StatusInternalServerError, err.Error())
+			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		api.Wrap(w, map[string]interface{}{"token": tkString, "id": p.Id})
+		utils.Wrap(w, map[string]interface{}{"token": tkString})
 	}
 }
 

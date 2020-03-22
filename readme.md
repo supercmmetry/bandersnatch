@@ -1,6 +1,6 @@
 <p align="center"><img src="https://i.ibb.co/5xcNxBK/gopher.png" alt="gopher"></p>
-
-<h1 align="center">Bandersnatch</h1>
+<br>
+<img align="center" src="https://i.ibb.co/Pr917y2/bandersnatch.png" alt="bandersnatch" border="0">
 <br>
 <h4> Steps to use </h4>
 

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"bandersnatch/api"
+	"bandersnatch/utils"
 	"context"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
@@ -20,7 +20,7 @@ func JwtAuth(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tokenHeader := r.Header.Get("Authorization")
 		if tokenHeader == "" {
-			api.RespWrap(w, http.StatusForbidden, "auth token missing")
+			utils.RespWrap(w, http.StatusForbidden, "auth token missing")
 			return
 		}
 
@@ -30,12 +30,12 @@ func JwtAuth(next http.Handler) http.HandlerFunc {
 		})
 
 		if err != nil {
-			api.RespWrap(w, http.StatusForbidden, "malformed auth token")
+			utils.RespWrap(w, http.StatusForbidden, "malformed auth token")
 			return
 		}
 
 		if !token.Valid {
-			api.RespWrap(w, http.StatusForbidden, "invalid token")
+			utils.RespWrap(w, http.StatusForbidden, "invalid token")
 			return
 		}
 

@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"bandersnatch/api"
 	"bandersnatch/api/middleware"
 	"bandersnatch/pkg/game"
 	"bandersnatch/pkg/player"
+	"bandersnatch/utils"
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -17,19 +17,19 @@ func StartGame(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFun
 
 		p, err := playerSvc.Find(tk.Email)
 		if err != nil {
-			api.RespWrap(w, http.StatusForbidden, err.Error())
+			utils.RespWrap(w, http.StatusForbidden, err.Error())
 			return
 		}
 
 		if tk.Id != p.Id {
-			api.RespWrap(w, http.StatusForbidden, "player id mismatch")
+			utils.RespWrap(w, http.StatusForbidden, "player id mismatch")
 			return
 		}
 
 		data := gameSvc.StartGame(p)
 
 		w.WriteHeader(http.StatusOK)
-		api.Wrap(w, map[string]interface{}{"data": data})
+		utils.Wrap(w, map[string]interface{}{"data": data})
 	}
 }
 
@@ -41,41 +41,41 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 
 		p, err := playerSvc.Find(tk.Email)
 		if err != nil {
-			api.RespWrap(w, http.StatusInternalServerError, err.Error())
+			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			return
 		}
 
 		if tk.Id != p.Id {
-			api.RespWrap(w, http.StatusForbidden, "player id mismatch")
+			utils.RespWrap(w, http.StatusForbidden, "player id mismatch")
 			return
 		}
 
 		jsonMap := make(map[string]interface{})
 		if err := json.NewDecoder(r.Body).Decode(&jsonMap); err != nil {
-			api.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		option, ok := jsonMap["option"]
 		if !ok {
-			api.RespWrap(w, http.StatusBadRequest, "option not found")
+			utils.RespWrap(w, http.StatusBadRequest, "option not found")
 			return
 		}
 		pl := &game.Player{Id:p.Id}
-		data, err := gameSvc.Play(pl, api.OptionTypeCast(option.(float64)))
+		data, err := gameSvc.Play(pl, utils.OptionTypeCast(option.(float64)))
 		if err != nil {
-			api.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
 
 		artifacts, err := gameSvc.GetArtifacts(pl)
 		if err != nil {
-			api.RespWrap(w, http.StatusNotFound, "player not found")
+			utils.RespWrap(w, http.StatusNotFound, "player not found")
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		api.Wrap(w, map[string]interface{}{"data": data, "artifacts": artifacts, "score": pl.TotalScore})
+		utils.Wrap(w, map[string]interface{}{"data": data, "artifacts": artifacts, "score": pl.TotalScore})
 	}
 }
 
