@@ -63,7 +63,7 @@ func main() {
 	utils.PrintAsciiArt()
 	nexus := &game.Nexus{}
 	if err := nexus.LoadFromFile(os.Getenv("NEXUS_FILE")); err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
 
