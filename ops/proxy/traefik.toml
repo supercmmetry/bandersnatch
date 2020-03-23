@@ -1,4 +1,5 @@
 defaultEntryPoint = ["http", "https"]
+logLevel=["info"]
 [entryPoints]
     [entryPoints.dashboard]
         address = ":8080"
@@ -19,13 +20,13 @@ defaultEntryPoint = ["http", "https"]
 [api]
 entryPoint = "dashboard"
 
-[acme]
-email = "vishaals2000@gmail.com"
-storage = "acme.json"
-entryPoint = "https"
-onHostRule = true
-    [acme.httpChallenge]
-    entryPoint = "http"
+#[acme]
+#email = "vishaals2000@gmail.com"
+#storage = "acme.json"
+#entryPoint = "https"
+#onHostRule = true
+#    [acme.httpChallenge]
+#    entryPoint = "http"
 
 [docker]
 domain = "bandersnatch.dscvit.com"

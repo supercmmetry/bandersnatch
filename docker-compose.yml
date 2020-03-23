@@ -1,0 +1,78 @@
+version: "3.7"
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+services:
+  bandersnatch:
+    image: "supercmmetry/bandersnatch:latest"
+    depends_on:
+      - db
+      - traefik
+    #restart: always
+    container_name: bandersnatch
+    env_file: ./.env
+    environment:
+      DB_URI: "${DB_URI}"
+      DEBUG: "${DEBUG}"
+      NEXUS_FILE: "${NEXUS_FILE}"
+    labels:
+      - traefik.backend=bandersnatch
+      - traefik.frontend.rule=Host:localhost
+      - traefik.docker.network=web
+      - traefik.port=1729
+    volumes:
+      - ./sample.json:/app/sample.json
+    networks:
+      - web
+      - internal
+
+  db:
+    image: "postgres:latest"
+    #restart: always
+    container_name: db
+    ports:
+      - "5432:5432"
+    env_file: ./.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    labels:
+      - traefik.enable=false
+    volumes:
+      - /db:/var/lib/postgresql
+
+    networks:
+      - internal
+
+  traefik:
+    image: "traefik:1.7.2-alpine"
+    #restart: always
+    container_name: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      - traefik.frontend.rule=Host:localhost
+      - traefik.port=8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./ops/proxy/traefik.toml:/traefik.toml
+      - ./ops/proxy/acme.json:/acme.json
+    networks:
+      - web
+
+
+  watchtower:
+    image: "v2tec/watchtower"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.docker/config.json:/config.json
+    command: --interval 30
+    labels:
+      - traefik.enable=false
+
