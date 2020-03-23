@@ -22,6 +22,6 @@ jobs:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
         run: |
-          docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+          echo $DOCKER_PASSWORD | docker login -u="$DOCKER_USERNAME" --password-stdin
           docker image build -t supercmmetry/bandersnatch:latest -f ./ops/images/go.Dockerfile .
           docker push supercmmetry/bandersnatch:latest
