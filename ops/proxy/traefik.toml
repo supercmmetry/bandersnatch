@@ -1,22 +1,24 @@
 defaultEntryPoint = ["http", "https"]
+logLevel = "INFO"
+
+[api]
+  entrypoint = "dashboard"
+
 [entryPoints]
     [entryPoints.dashboard]
         address = ":8080"
     [entryPoints.dashboard.auth]
         [entryPoints.dashboard.auth.basic]
-        users = ["admin:$apr1$mrWAMDUN$XjHtyxxSGLRIEl..S4SnG0"]
+            users = ["admin:$apr1$mrWAMDUN$XjHtyxxSGLRIEl..S4SnG0"]
 
     [entryPoints.http]
         address = ":80"
-        [entryPoints.http.redirect]
-            entryPoint = "https"
+#        [entryPoints.http.redirect]
+#            entryPoint = "https"
 
     [entryPoints.https]
         address = ":443"
         [entryPoints.https.tls]
-
-[api]
-entryPoint = "dashboard"
 
 #[acme]
 #email = "vishaals2000@gmail.com"
@@ -25,8 +27,8 @@ entryPoint = "dashboard"
 #onHostRule = true
 #    [acme.httpChallenge]
 #    entryPoint = "http"
-
+#
 [docker]
-domain = "bandersnatch.dscvit.com"
+domain = "http://localhost:80"
 watch = true
 network = "web"

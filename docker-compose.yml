@@ -21,7 +21,7 @@ services:
       - NEXUS_FILE=${NEXUS_FILE}
     labels:
       - traefik.backend=bandersnatch
-      - traefik.frontend.rule=Host:localhost
+      - traefik.frontend.rule=Host:localhost;PathPrefix:/api/bandersnatch
       - traefik.docker.network=web
       - traefik.port=1729
     volumes:
@@ -50,12 +50,13 @@ services:
       - internal
 
   traefik:
-    image: "traefik:1.7.2-alpine"
+    image: "traefik:alpine"
     #restart: always
     container_name: traefik
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     labels:
       - traefik.frontend.rule=Host:localhost
       - traefik.port=8080
@@ -67,13 +68,13 @@ services:
       - web
 
 
-#  watchtower:
-#    image: "v2tec/watchtower"
-#    container_name: "watchtower"
-#    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock
-#      - ~/.docker/config.json:/config.json
-#    command: --interval 30
-#    labels:
-#      - traefik.enable=false
+  watchtower:
+    image: "v2tec/watchtower"
+    container_name: "watchtower"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.docker/config.json:/config.json
+    command: --interval 30
+    labels:
+      - traefik.enable=false
 
