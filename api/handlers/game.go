@@ -78,6 +78,12 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 			return
 		}
 
+		p.MaxScore = pl.TotalScore
+		if err := playerSvc.SaveMaxScore(p); err != nil {
+			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
 		w.WriteHeader(http.StatusOK)
 		utils.Wrap(w, map[string]interface{}{"data": data, "artifacts": artifacts, "score": pl.TotalScore})
 	}

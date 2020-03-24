@@ -12,20 +12,21 @@ type Service struct {
 	repo Repository
 }
 
+func (s *Service) SaveMaxScore(p *entities.Player) error {
+	return s.repo.SaveMaxScore(p)
+}
+
 func (s *Service) SignUp(p *entities.Player) (*jwt.Token, error) {
 	passHash, err := bcrypt.GenerateFromPassword([]byte(p.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-
-
 	p.Password = string(passHash)
 	err = s.repo.SignUp(p)
 	if err != nil {
 		return nil, err
 	}
-
 
 	token := middleware.Token{Email: p.Email, Id: p.Id}
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS512, token)

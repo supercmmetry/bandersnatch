@@ -25,7 +25,7 @@ services:
       - traefik.docker.network=web
       - traefik.port=1729
     volumes:
-      - ./sample.json:/app/sample.json
+      - "./sample.json:/sample.json:rw"
     networks:
       - web
       - internal
