@@ -8,7 +8,7 @@
         "right_option": "Take it."
       },
       "left_nodes": [2],
-      "right_nodes": [3],
+      "right_nodes": [3, 2],
       "is_leader": true
     },
     {
@@ -17,8 +17,7 @@
         "question": "Where do you want to go now ?",
         "left_option": "Home",
         "right_option": "School"
-      },
-      "is_leaf": true
+      }
     },
     {
       "id": 3,
@@ -27,7 +26,6 @@
         "left_option": "Write a name.",
         "right_option": "Throw the notebook away."
       },
-      "is_leaf": true,
       "can_hold_artifact": true
     },
     {
@@ -48,7 +46,6 @@
         "left_option": "Investigate in schools.",
         "right_option": "Search for more clues."
       },
-      "is_leaf": true,
       "can_hold_artifact": true
     },
     {
@@ -58,7 +55,6 @@
         "left_option": "Ask Lite Yagami about what he is writing.",
         "right_option": "Sneak up from behind and observe what he is writing."
       },
-      "is_leaf": true,
       "can_hold_artifact": true
     }
   ],

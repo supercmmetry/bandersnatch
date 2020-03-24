@@ -24,7 +24,7 @@ type Node struct {
 	IsLeader        bool     `json:"is_leader"`
 	IsLeaf          bool     `json:"is_leaf"`
 	CanHoldArtifact bool     `json:"can_hold_artifact"`
-	RandomizePath   bool     `json:"randomize_path"`
+	RandomizePath   bool
 }
 
 func (n *Node) Traverse(opt Option) *Node {

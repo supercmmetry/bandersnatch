@@ -44,6 +44,12 @@ func (n *Nexus) createDyraStat() {
 	nodeMap := make(map[uint64]*Node)
 	for _, node := range n.Nodes {
 		nodeMap[node.Id] = node
+		if len(node.LeftNodeIds) > 1 || len(node.RightNodeIds) > 1 {
+			node.RandomizePath = true
+		}
+		if len(node.LeftNodeIds) == 0 && len(node.RightNodeIds) == 0 {
+			node.IsLeaf = true
+		}
 	}
 
 	for _, node := range nodeMap {
@@ -120,19 +126,24 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 	}
 
 	*p = *n.Players[p.Id]
+
 	if p.CurrentNode.RandomizePath {
+		if err := n.scrambleArtifacts(p, false); err != nil {
+			return err
+		}
 		if len(p.CurrentNode.LeftNodeIds) == 0 && len(p.CurrentNode.RightNodeIds) == 0 {
 			p.CurrentNode.IsLeaf = true
-		}
-		if len(p.CurrentNode.LeftNodeIds) == 0 {
-			p.CurrentNode.LeftNodeIds = p.CurrentNode.RightNodeIds
-		}
-		if len(p.CurrentNode.RightNodeIds) == 0 {
-			p.CurrentNode.RightNodeIds = p.CurrentNode.LeftNodeIds
-		}
+		} else {
+			if len(p.CurrentNode.LeftNodeIds) == 0 {
+				p.CurrentNode.LeftNodeIds = p.CurrentNode.RightNodeIds
+			}
+			if len(p.CurrentNode.RightNodeIds) == 0 {
+				p.CurrentNode.RightNodeIds = p.CurrentNode.LeftNodeIds
+			}
 
-		p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[rand.Intn(len(p.CurrentNode.LeftNodeIds))]-1]
-		p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[rand.Intn(len(p.CurrentNode.RightNodeIds))]-1]
+			p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[rand.Intn(len(p.CurrentNode.LeftNodeIds))]-1]
+			p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[rand.Intn(len(p.CurrentNode.RightNodeIds))]-1]
+		}
 	}
 
 	if p.CurrentNode.IsLeaf {
