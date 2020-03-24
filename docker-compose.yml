@@ -9,23 +9,23 @@ networks:
 services:
   bandersnatch:
     image: "supercmmetry/bandersnatch:latest"
+    #restart: always
     depends_on:
       - db
       - traefik
-    #restart: always
     container_name: bandersnatch
     env_file: ./.env
     environment:
-      DB_URI: "${DB_URI}"
-      DEBUG: "${DEBUG}"
-      NEXUS_FILE: "${NEXUS_FILE}"
+      - DB_URI=${DB_URI}
+      - DEBUG=${DEBUG}
+      - NEXUS_FILE=${NEXUS_FILE}
     labels:
       - traefik.backend=bandersnatch
       - traefik.frontend.rule=Host:localhost
       - traefik.docker.network=web
       - traefik.port=1729
     volumes:
-      - "./sample.json:/sample.json:rw"
+      - ./nexus/sample.json:/nexus/sample.json
     networks:
       - web
       - internal
@@ -44,7 +44,7 @@ services:
     labels:
       - traefik.enable=false
     volumes:
-      - /db:/var/lib/postgresql
+      - ./db:/var/lib/postgresql
 
     networks:
       - internal
@@ -67,12 +67,13 @@ services:
       - web
 
 
-  watchtower:
-    image: "v2tec/watchtower"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.docker/config.json:/config.json
-    command: --interval 30
-    labels:
-      - traefik.enable=false
+#  watchtower:
+#    image: "v2tec/watchtower"
+#    container_name: "watchtower"
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - ~/.docker/config.json:/config.json
+#    command: --interval 30
+#    labels:
+#      - traefik.enable=false
 

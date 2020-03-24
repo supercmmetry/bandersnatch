@@ -14,6 +14,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/main ./main.go
 # Runner
 FROM alpine:latest as runner
 
+VOLUME ["/nexus"]
+
+RUN ls /bin
+
 COPY --from=builder /app/bin/main .
 
 CMD ["./main"]

@@ -1,21 +1,19 @@
 defaultEntryPoint = ["http", "https"]
-logLevel=["info"]
 [entryPoints]
     [entryPoints.dashboard]
         address = ":8080"
-
     [entryPoints.dashboard.auth]
         [entryPoints.dashboard.auth.basic]
         users = ["admin:$apr1$mrWAMDUN$XjHtyxxSGLRIEl..S4SnG0"]
 
     [entryPoints.http]
         address = ":80"
-            [entryPoints.http.redirect]
-                entryPoint = "https"
+        [entryPoints.http.redirect]
+            entryPoint = "https"
 
     [entryPoints.https]
         address = ":443"
-            [entryPoints.https.tls]
+        [entryPoints.https.tls]
 
 [api]
 entryPoint = "dashboard"

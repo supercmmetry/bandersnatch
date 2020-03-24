@@ -61,6 +61,7 @@ func initNegroni() *negroni.Negroni {
 
 func main() {
 	utils.PrintAsciiArt()
+
 	nexus := &game.Nexus{}
 	if err := nexus.LoadFromFile(os.Getenv("NEXUS_FILE")); err != nil {
 		log.Fatal(err)
@@ -72,16 +73,13 @@ func main() {
 	n.UseHandler(r)
 	db := connectToDb()
 
-
 	playerRepo := player.NewPostgresRepo(db)
 
 	playerSvc := player.NewService(playerRepo)
 	gameSvc := game.NewService(nexus)
 
-
 	handlers.MakePlayerHandlers(r, playerSvc)
 	handlers.MakeGameHandlers(r, playerSvc, gameSvc)
-
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -95,6 +93,5 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-
 
 }
