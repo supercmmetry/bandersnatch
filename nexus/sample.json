@@ -7,8 +7,8 @@
         "left_option": "Leave it there.",
         "right_option": "Take it."
       },
-      "left_node": 2,
-      "right_node": 3,
+      "left_nodes": [2],
+      "right_nodes": [3],
       "is_leader": true
     },
     {
@@ -38,8 +38,8 @@
         "right_option": "Turn down the request."
       },
       "is_leader": true,
-      "left_node": 5,
-      "right_node": 6
+      "left_nodes": [5],
+      "right_nodes": [6]
     },
     {
       "id": 5,

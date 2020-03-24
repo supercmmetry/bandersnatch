@@ -49,37 +49,38 @@ func (n *Nexus) createDyraStat() {
 	for _, node := range nodeMap {
 		if node.IsLeader {
 			n.Leaders = append(n.Leaders, node)
+			node.Leader = node
 		}
-		if node.LeftNodeId != 0 {
-			node.LeftChild = nodeMap[node.LeftNodeId]
-			node.LeftChild.Parent = node
+		if node.RandomizePath {
+			for _, childId := range node.LeftNodeIds {
+				child := nodeMap[childId]
+				child.Leader = node.Leader
+			}
+			for _, childId := range node.RightNodeIds {
+				child := nodeMap[childId]
+				child.Leader = node.Leader
+			}
+			continue
 		}
-		if node.RightNodeId != 0 {
-			node.RightChild = nodeMap[node.RightNodeId]
-			node.RightChild.Parent = node
+		if len(node.LeftNodeIds) > 0 && node.LeftNodeIds[0] != 0 {
+			node.LeftChild = nodeMap[node.LeftNodeIds[0]]
+			node.LeftChild.Leader = node.Leader
+		}
+		if len(node.RightNodeIds) > 0 && node.RightNodeIds[0] != 0 {
+			node.RightChild = nodeMap[node.RightNodeIds[0]]
+			node.RightChild.Leader = node.Leader
 		}
 	}
 }
 
 func (n *Nexus) generateArtifactNodes() {
 	n.artifactNodes = make(map[*Node][]*Node)
-	for _, node := range n.Leaders {
-		queue := make([]*Node, 0)
-		queue = append(queue, node)
-		for len(queue) > 0 {
-			curr := queue[0]
-
-			if curr.CanHoldArtifact {
-				n.artifactNodes[node] = append(n.artifactNodes[node], curr)
+	for _, node := range n.Nodes {
+		if node.CanHoldArtifact {
+			if _, ok := n.artifactNodes[node.Leader]; !ok {
+				n.artifactNodes[node.Leader] = make([]*Node, 0)
 			}
-
-			queue = queue[1:]
-			if curr.LeftChild != nil {
-				queue = append(queue, curr.LeftChild)
-			}
-			if curr.RightChild != nil {
-				queue = append(queue, curr.RightChild)
-			}
+			n.artifactNodes[node.Leader] = append(n.artifactNodes[node.Leader], node)
 		}
 	}
 }
@@ -119,6 +120,21 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 	}
 
 	*p = *n.Players[p.Id]
+	if p.CurrentNode.RandomizePath {
+		if len(p.CurrentNode.LeftNodeIds) == 0 && len(p.CurrentNode.RightNodeIds) == 0 {
+			p.CurrentNode.IsLeaf = true
+		}
+		if len(p.CurrentNode.LeftNodeIds) == 0 {
+			p.CurrentNode.LeftNodeIds = p.CurrentNode.RightNodeIds
+		}
+		if len(p.CurrentNode.RightNodeIds) == 0 {
+			p.CurrentNode.RightNodeIds = p.CurrentNode.LeftNodeIds
+		}
+
+		p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[rand.Intn(len(p.CurrentNode.LeftNodeIds))]-1]
+		p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[rand.Intn(len(p.CurrentNode.RightNodeIds))]-1]
+	}
+
 	if p.CurrentNode.IsLeaf {
 		p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
 		*n.Players[p.Id] = *p
@@ -152,7 +168,7 @@ func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) error {
 		}
 		num := rand.Intn(1000)
 		if num >= int(1000*artifact.ScrambleCoefficient) || forceScramble {
-			leader := p.CurrentNode.FetchLeader()
+			leader := p.CurrentNode.Leader
 			anodes := n.artifactNodes[leader]
 			anode := anodes[rand.Intn(len(anodes))]
 			p.ArtifactDistribution[anode] = artifact

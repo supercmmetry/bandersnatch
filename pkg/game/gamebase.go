@@ -16,22 +16,15 @@ type NodeData struct {
 type Node struct {
 	Id              uint64    `json:"id"`
 	Data            *NodeData `json:"data"`
-	Parent          *Node
+	Leader          *Node
 	LeftChild       *Node
 	RightChild      *Node
-	LeftNodeId      uint64 `json:"left_node"`
-	RightNodeId     uint64 `json:"right_node"`
-	IsLeader        bool `json:"is_leader"`
-	IsLeaf          bool `json:"is_leaf"`
-	CanHoldArtifact bool `json:"can_hold_artifact"`
-}
-
-func (n *Node) FetchLeader() *Node {
-	curr := n
-	for curr.Parent != nil {
-		curr = curr.Parent
-	}
-	return curr
+	LeftNodeIds     []uint64 `json:"left_nodes"`
+	RightNodeIds    []uint64 `json:"right_nodes"`
+	IsLeader        bool     `json:"is_leader"`
+	IsLeaf          bool     `json:"is_leaf"`
+	CanHoldArtifact bool     `json:"can_hold_artifact"`
+	RandomizePath   bool     `json:"randomize_path"`
 }
 
 func (n *Node) Traverse(opt Option) *Node {
