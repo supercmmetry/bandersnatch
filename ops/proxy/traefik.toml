@@ -13,22 +13,24 @@ logLevel = "INFO"
 
     [entryPoints.http]
         address = ":80"
-#        [entryPoints.http.redirect]
-#            entryPoint = "https"
+        [entryPoints.http.redirect]
+            entryPoint = "https"
 
     [entryPoints.https]
         address = ":443"
         [entryPoints.https.tls]
 
-#[acme]
-#email = "vishaals2000@gmail.com"
-#storage = "acme.json"
-#entryPoint = "https"
-#onHostRule = true
-#    [acme.httpChallenge]
-#    entryPoint = "http"
-#
+[acme]
+    entryPoint = "https"
+    acmeLogging = true
+    email = "vishaals2000@gmail.com"
+    storage = "/acme.json"
+    caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+    onHostRule = true
+    [acme.httpChallenge]
+        entryPoint = "http"
+
 [docker]
-domain = "http://localhost:80"
-watch = true
-network = "web"
+    domain = "bandersnatch.dscvit.com"
+    watch = true
+    network = "web"

@@ -21,7 +21,7 @@ services:
       - NEXUS_FILE=${NEXUS_FILE}
     labels:
       - traefik.backend=bandersnatch
-      - traefik.frontend.rule=Host:localhost;PathPrefix:/api/bandersnatch
+      - traefik.frontend.rule=Host:bandersnatch.dscvit.com;PathPrefix:/api/bandersnatch
       - traefik.docker.network=web
       - traefik.port=1729
     volumes:
@@ -56,9 +56,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
     labels:
-      - traefik.frontend.rule=Host:localhost
+      - traefik.frontend.rule=Host:bandersnatch.dscvit.com
       - traefik.port=8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
