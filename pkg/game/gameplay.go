@@ -119,7 +119,11 @@ func (n *Nexus) InjectArtifacts(p *Player) {
 	// This is done to prevent game-state injection
 	*p = *n.Players[p.Id]
 	for _, id := range p.CurrentNode.ArtifactIds {
+		if _, ok := p.CollectedArtifacts[n.artifactMap[id]]; ok {
+			continue
+		}
 		p.CollectedArtifacts[n.artifactMap[id]] = struct{}{}
+		p.TotalScore += n.artifactMap[id].Score
 	}
 	*n.Players[p.Id] = *p
 }
