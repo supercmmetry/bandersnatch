@@ -9,7 +9,7 @@ networks:
 services:
   bandersnatch:
     image: "supercmmetry/bandersnatch:latest"
-    #restart: always
+    restart: always
     depends_on:
       - db
       - traefik
@@ -51,7 +51,7 @@ services:
 
   traefik:
     image: "traefik:alpine"
-    #restart: always
+    restart: always
     container_name: traefik
     ports:
       - "80:80"

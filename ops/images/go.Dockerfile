@@ -16,8 +16,6 @@ FROM alpine:latest as runner
 
 VOLUME ["/nexus"]
 
-RUN ls /bin
-
 COPY --from=builder /app/bin/main .
 
 CMD ["./main"]
