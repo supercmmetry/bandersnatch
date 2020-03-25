@@ -14,17 +14,18 @@ type NodeData struct {
 }
 
 type Node struct {
-	Id              uint64    `json:"id"`
-	Data            *NodeData `json:"data"`
-	Leader          *Node
-	LeftChild       *Node
-	RightChild      *Node
-	LeftNodeIds     []uint64 `json:"left_nodes"`
-	RightNodeIds    []uint64 `json:"right_nodes"`
-	IsLeader        bool     `json:"is_leader"`
-	IsLeaf          bool     `json:"is_leaf"`
-	CanHoldArtifact bool     `json:"can_hold_artifact"`
-	RandomizePath   bool
+	Id                  uint64    `json:"id"`
+	Data                *NodeData `json:"data"`
+	Leader              *Node
+	LeftChild           *Node
+	RightChild          *Node
+	LeftNodeIds         []uint64 `json:"left_nodes"`
+	RightNodeIds        []uint64 `json:"right_nodes"`
+	ArtifactIds         []uint64 `json:"artifact_ids"`
+	RequiredArtifactIds []uint64 `json:"required_artifact_ids"`
+	IsLeader            bool     `json:"is_leader"`
+	IsLeaf              bool     `json:"is_leaf"`
+	RandomizePath       bool
 }
 
 func (n *Node) Traverse(opt Option) *Node {
@@ -41,32 +42,9 @@ func (n *Node) Traverse(opt Option) *Node {
 	}
 }
 
-func (n *Node) GetNodeByNum(num int) *Node {
-	curr := n
-	queue := make([]*Node, 0)
-	queue = append(queue, curr)
-	visited := make(map[uint64]struct{})
-	for len(queue) > 0 && num >= 0 {
-		curr = queue[0]
-		queue = queue[1:]
-		if _, ok := visited[curr.Id]; ok {
-			continue
-		}
-		visited[curr.Id] = struct{}{}
-
-		num--
-		if curr.LeftChild != nil {
-			queue = append(queue, curr.LeftChild)
-		}
-		if curr.RightChild != nil {
-			queue = append(queue, curr.RightChild)
-		}
-	}
-	return curr
-}
-
 type Artifact struct {
-	Id                  uint64  `json:"id"`
-	ScrambleCoefficient float64 `json:"scramble_coeff"`
-	Description         string  `json:"description"`
+	Id           uint64   `json:"id"`
+	Dependencies []uint64 `json:"dependencies"`
+	Description  string   `json:"description"`
+	Score        uint64   `json:"score"`
 }

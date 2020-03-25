@@ -13,13 +13,15 @@ type Player struct {
 	CurrentNode          *Node
 	CollectedArtifacts   map[*Artifact]struct{}
 	TotalScore           uint64
+	VisitedNodeMap       map[*Node]struct{}
 }
 
 type Nexus struct {
 	Leaders       []*Node
 	Nodes         []*Node `json:"nodes"`
 	Players       map[uint64]*Player
-	Artifacts     []*Artifact       `json:"artifacts"`
+	Artifacts     []*Artifact `json:"artifacts"`
+	artifactMap   map[uint64]*Artifact
 	artifactNodes map[*Node][]*Node // maps a leader node to a list of potential artifact nodes under the leader node.
 }
 
@@ -80,9 +82,15 @@ func (n *Nexus) createDyraStat() {
 }
 
 func (n *Nexus) generateArtifactNodes() {
+	artifactMap := make(map[uint64]*Artifact)
+	for _, artifact := range n.Artifacts {
+		artifactMap[artifact.Id] = artifact
+	}
+	n.artifactMap = artifactMap
+
 	n.artifactNodes = make(map[*Node][]*Node)
 	for _, node := range n.Nodes {
-		if node.CanHoldArtifact {
+		if len(node.ArtifactIds) > 0 {
 			if _, ok := n.artifactNodes[node.Leader]; !ok {
 				n.artifactNodes[node.Leader] = make([]*Node, 0)
 			}
@@ -92,28 +100,37 @@ func (n *Nexus) generateArtifactNodes() {
 }
 
 func (n *Nexus) Start(p *Player) error {
+	if p == nil {
+		return pkg.ErrNilNode
+	}
 	n.Players[p.Id] = &Player{Id: p.Id}
 	*p = *n.Players[p.Id]
+	p.VisitedNodeMap = make(map[*Node]struct{})
 	// Assign a random leader node to the player.
 	p.TotalScore = 0
 	p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
 	p.CollectedArtifacts = make(map[*Artifact]struct{})
 	// Initialize Artifact-Distribution
 	*n.Players[p.Id] = *p
-	return n.scrambleArtifacts(p, true)
+	return nil
 }
 
-func (n *Nexus) CheckForArtifact(p *Player) *Artifact {
+func (n *Nexus) InjectArtifacts(p *Player) {
 	// This is done to prevent game-state injection
 	*p = *n.Players[p.Id]
-	if artifact, ok := p.ArtifactDistribution[p.CurrentNode]; ok {
-		p.CollectedArtifacts[artifact] = struct{}{}
-		p.TotalScore += uint64(100 * artifact.ScrambleCoefficient)
-		*n.Players[p.Id] = *p
-		return artifact
-	} else {
-		return nil
+	for _, id := range p.CurrentNode.ArtifactIds {
+		p.CollectedArtifacts[n.artifactMap[id]] = struct{}{}
 	}
+	*n.Players[p.Id] = *p
+}
+
+func (n *Nexus) satisfiesDependency(target *Node, p *Player) bool {
+	for _, id := range target.RequiredArtifactIds {
+		if _, ok := p.CollectedArtifacts[n.artifactMap[id]]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func (n *Nexus) Traverse(p *Player, opt Option) error {
@@ -128,9 +145,6 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 	*p = *n.Players[p.Id]
 
 	if p.CurrentNode.RandomizePath {
-		if err := n.scrambleArtifacts(p, false); err != nil {
-			return err
-		}
 		if len(p.CurrentNode.LeftNodeIds) == 0 && len(p.CurrentNode.RightNodeIds) == 0 {
 			p.CurrentNode.IsLeaf = true
 		} else {
@@ -141,51 +155,45 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 				p.CurrentNode.RightNodeIds = p.CurrentNode.LeftNodeIds
 			}
 
-			p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[rand.Intn(len(p.CurrentNode.LeftNodeIds))]-1]
-			p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[rand.Intn(len(p.CurrentNode.RightNodeIds))]-1]
+			// randomize and prevent subtree selection starvation.
+			length := len(p.CurrentNode.LeftNodeIds)
+			randId := rand.Intn(length)
+			p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[randId] - 1]
+			for i := randId; i != (randId+length-1)%length; i = (i + 1) % length{
+				p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[i] - 1]
+
+				if !n.satisfiesDependency(p.CurrentNode.LeftChild, p) {
+					continue
+				}
+				if _, ok := p.VisitedNodeMap[p.CurrentNode.LeftChild]; !ok {
+					break
+				}
+			}
+
+			length = len(p.CurrentNode.RightNodeIds)
+			randId = rand.Intn(length)
+			p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[randId] - 1]
+			for i := randId; i != (randId+length-1)%length; i = (i + 1) % length {
+				p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[i] - 1]
+
+				if !n.satisfiesDependency(p.CurrentNode.RightChild, p) {
+					continue
+				}
+				if _, ok := p.VisitedNodeMap[p.CurrentNode.RightChild]; !ok {
+					break
+				}
+			}
 		}
 	}
 
 	if p.CurrentNode.IsLeaf {
 		p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
-		*n.Players[p.Id] = *p
-		if err := n.scrambleArtifacts(p, false); err != nil {
-			return err
-		}
 	} else {
 		p.CurrentNode = p.CurrentNode.Traverse(opt)
 	}
+	p.VisitedNodeMap[p.CurrentNode] = struct{}{}
 	*n.Players[p.Id] = *p
-	n.CheckForArtifact(p)
+	n.InjectArtifacts(p)
 
-	return nil
-}
-
-func (n *Nexus) scrambleArtifacts(p *Player, forceScramble bool) error {
-	if p == nil {
-		return pkg.ErrNilNode
-	}
-
-	if _, ok := n.Players[p.Id]; !ok {
-		return pkg.ErrNilNode
-	}
-
-	*p = *n.Players[p.Id]
-	p.ArtifactDistribution = make(map[*Node]*Artifact)
-	// We scramble the artifacts based on their scramble-coefficients.
-	for _, artifact := range n.Artifacts {
-		if _, ok := p.CollectedArtifacts[artifact]; ok {
-			continue
-		}
-		num := rand.Intn(1000)
-		if num >= int(1000*artifact.ScrambleCoefficient) || forceScramble {
-			leader := p.CurrentNode.Leader
-			anodes := n.artifactNodes[leader]
-			anode := anodes[rand.Intn(len(anodes))]
-			p.ArtifactDistribution[anode] = artifact
-			break
-		}
-	}
-	*n.Players[p.Id] = *p
 	return nil
 }
