@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bandersnatch/api/middleware"
+	"bandersnatch/pkg"
 	"bandersnatch/pkg/game"
 	"bandersnatch/pkg/player"
 	"bandersnatch/utils"
@@ -45,7 +46,12 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 
 		p, err := playerSvc.Find(tk.Email)
 		if err != nil {
-			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			switch err {
+			case pkg.ErrNotFound:
+				utils.RespWrap(w, http.StatusNotFound, "player not found")
+			default:
+				utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			}
 			return
 		}
 
@@ -65,6 +71,7 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 			utils.RespWrap(w, http.StatusBadRequest, "option not found")
 			return
 		}
+
 		pl := &game.Player{Id:p.Id}
 		data, err := gameSvc.Play(pl, utils.OptionTypeCast(option.(float64)))
 		if err != nil {
@@ -80,7 +87,12 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 
 		p.MaxScore = pl.TotalScore
 		if err := playerSvc.SaveMaxScore(p); err != nil {
-			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			switch err {
+			case pkg.ErrNotFound:
+				utils.RespWrap(w, http.StatusNotFound, "player not found")
+			default:
+				utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			}
 			return
 		}
 

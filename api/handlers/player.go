@@ -79,7 +79,7 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 
 		tkString, err := token.SignedString([]byte(os.Getenv("JWT_PASSWORD")))
 		if err != nil {
-			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			utils.RespWrap(w, http.StatusForbidden, err.Error())
 			return
 		}
 
