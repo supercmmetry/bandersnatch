@@ -1,7 +1,8 @@
-defaultEntryPoint = ["http", "https"]
+defaultEntryPoints = ["http", "https"]
 logLevel = "INFO"
 
 [api]
+  dashboard = true
   entrypoint = "dashboard"
 
 [entryPoints]
