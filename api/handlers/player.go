@@ -90,7 +90,8 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 
 func ViewLeaderboard(playerSvc *player.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if leaders, err := playerSvc.ViewLeaderboard(); err != nil {
+		leaders, err := playerSvc.ViewLeaderboard() 
+		if err != nil {
 			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			return
 		}

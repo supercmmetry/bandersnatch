@@ -77,7 +77,7 @@ func (r *repo) ViewLeaderboard() ([]entities.AbstractPlayer, error) {
 	tx := r.DB.Begin()
 	var scores []entities.AbstractPlayer
 
-	if rows, err := tx.Model(&entities.Player{}).Select("Name, Email, MaxScore").Order("MaxScore desc").Rows(); err != nil {
+	if rows, err := tx.Model(&entities.Player{}).Select("Name, Email, MaxScore").Order("MaxScore desc").Rows(); err == nil {
 		for rows.Next() {
 			var ap entities.AbstractPlayer
 			rows.Scan(&ap.Name, &ap.Email, &ap.MaxScore)
