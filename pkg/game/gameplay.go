@@ -162,35 +162,55 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 			// randomize and prevent subtree selection starvation.
 			length := len(p.CurrentNode.LeftNodeIds)
 			randId := rand.Intn(length)
-			p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[randId]-1]
+			cycleCompleted := false
+			endId := (randId+length-1)%length
 			for i := randId; ; i = (i + 1) % length {
 				p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[i]-1]
 
 				if !n.satisfiesDependency(p.CurrentNode.LeftChild, p) {
-					if i == (randId+length-1) % length {
+					if i == endId && cycleCompleted {
 						return pkg.ErrNoPathFound
+					}
+					if i == endId {
+						cycleCompleted = true
 					}
 					continue
 				}
-				if _, ok := p.VisitedNodeMap[p.CurrentNode.LeftChild]; !ok || i == (randId+length-1) % length {
+
+				if i == endId {
+					cycleCompleted = true
+				}
+
+				if _, ok := p.VisitedNodeMap[p.CurrentNode.LeftChild]; !ok || cycleCompleted {
 					break
 				}
 			}
 
 			length = len(p.CurrentNode.RightNodeIds)
 			randId = rand.Intn(length)
-			p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[randId]-1]
+			cycleCompleted = false
+			endId = (randId+length-1)%length
 
 			for i := randId; ; i = (i + 1) % length {
 				p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[i]-1]
 
+
+
 				if !n.satisfiesDependency(p.CurrentNode.RightChild, p) {
-					if i == (randId+length-1) % length {
+					if i == endId && cycleCompleted {
 						return pkg.ErrNoPathFound
+					}
+					if i == endId {
+						cycleCompleted = true
 					}
 					continue
 				}
-				if _, ok := p.VisitedNodeMap[p.CurrentNode.RightChild]; !ok || i == (randId+length-1) % length {
+
+				if i == endId {
+					cycleCompleted = true
+				}
+
+				if _, ok := p.VisitedNodeMap[p.CurrentNode.RightChild]; !ok || cycleCompleted {
 					break
 				}
 			}
