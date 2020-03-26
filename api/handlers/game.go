@@ -50,6 +50,19 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 			utils.Wrap(w, map[string]interface{}{"data": data})
 			return
 		}
+		if result, ok := jsonMap["start"]; ok {
+			if shouldStart, ok := result.(bool); shouldStart && ok {
+				data, err := gameSvc.StartGame(p)
+				if err != nil {
+					utils.RespWrap(w, http.StatusForbidden, err.Error())
+					return
+				}
+
+				w.WriteHeader(http.StatusOK)
+				utils.Wrap(w, map[string]interface{}{"data": data})
+				return
+			}
+		}
 
 
 		if result, ok := jsonMap["resume"]; ok {

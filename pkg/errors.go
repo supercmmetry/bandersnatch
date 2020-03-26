@@ -8,4 +8,5 @@ var (
 	ErrDatabase = errors.New("error occured in database")
 	ErrNotFound = errors.New("record not found")
 	ErrInvalidOperation = errors.New("invalid operation")
+	ErrNoPathFound = errors.New("no possible path found")
 )
