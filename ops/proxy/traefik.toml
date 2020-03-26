@@ -26,11 +26,13 @@ logLevel = "INFO"
     email = "vishaals2000@gmail.com"
     storage = "/acme.json"
     caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
-    onHostRule = true
+    #onHostRule = true
     [acme.httpChallenge]
         entryPoint = "http"
+    [[acme.domains]]
+        main = "playscenario.dscvit.com"
 
 [docker]
-    domain = "bandersnatch.dscvit.com"
+    domain = "playscenario.dscvit.com"
     watch = true
     network = "web"
