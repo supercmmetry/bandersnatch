@@ -88,8 +88,21 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 	}
 }
 
+func ViewLeaderboard(playerSvc *player.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if leaders, err := playerSvc.ViewLeaderboard(); err != nil {
+			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		utils.Wrap(w, map[string]interface{}{"leaderboard": leaders})
+	}
+}
+
 func MakePlayerHandlers(router *httprouter.Router, playerSvc *player.Service) {
 	router.HandlerFunc("POST", "/api/bandersnatch/signup", SignUp(playerSvc))
 	router.HandlerFunc("POST", "/api/bandersnatch/signin", SignIn(playerSvc))
+	router.HandlerFunc("POST", "/api/bandersnatch/leaderboard", ViewLeaderboard(playerSvc))
 }
 
