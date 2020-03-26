@@ -80,7 +80,9 @@ func (r *repo) ViewLeaderboard() ([]entities.AbstractPlayer, error) {
 	if rows, err := tx.Model(&entities.Player{}).Select("Name, Email, MaxScore").Order("MaxScore desc").Rows(); err != nil {
 		for rows.Next() {
 			var ap entities.AbstractPlayer
-			rows.Scan(&ap.Name, &ap.Email, &ap.MaxScore)
+			if err := rows.Scan(&ap.Name, &ap.Email, &ap.MaxScore); err != nil {
+				return nil, pkg.ErrDatabase
+			}
 			scores = append(scores, ap)
 		}
 	} else {
