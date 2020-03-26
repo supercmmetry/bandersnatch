@@ -11,34 +11,6 @@ import (
 	"net/http"
 )
 
-func StartGame(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		tk := ctx.Value(middleware.JwtContextKey("token")).(*middleware.Token)
-
-		p, err := playerSvc.Find(tk.Email)
-		if err != nil {
-			utils.RespWrap(w, http.StatusForbidden, err.Error())
-			return
-		}
-
-		if tk.Id != p.Id {
-			utils.RespWrap(w, http.StatusForbidden, "player id mismatch")
-			return
-		}
-
-		data, err := gameSvc.StartGame(p)
-		if err != nil {
-			utils.RespWrap(w, http.StatusForbidden, err.Error())
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		utils.Wrap(w, map[string]interface{}{"data": data})
-	}
-}
-
-
 func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -65,6 +37,39 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
 		}
+		pl := &game.Player{Id:p.Id}
+
+		if !gameSvc.CheckIfPlayerExists(pl) {
+			data, err := gameSvc.StartGame(p)
+			if err != nil {
+				utils.RespWrap(w, http.StatusForbidden, err.Error())
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			utils.Wrap(w, map[string]interface{}{"data": data})
+			return
+		}
+
+
+		if result, ok := jsonMap["resume"]; ok {
+			if shouldResume, ok := result.(bool); shouldResume && ok {
+				data, err := gameSvc.GetNodeData(pl)
+				if err != nil {
+					utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+				} else {
+					artifacts, err := gameSvc.GetArtifacts(pl)
+					if err != nil {
+						utils.RespWrap(w, http.StatusNotFound, "player not found")
+						return
+					}
+					w.WriteHeader(http.StatusOK)
+					utils.Wrap(w, map[string]interface{}{"data": data, "artifacts": artifacts, "score": pl.TotalScore})
+					return
+				}
+
+			}
+		}
 
 		option, ok := jsonMap["option"]
 		if !ok {
@@ -72,8 +77,13 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 			return
 		}
 
-		pl := &game.Player{Id:p.Id}
-		data, err := gameSvc.Play(pl, utils.OptionTypeCast(option.(float64)))
+
+		optionFloat, ok := option.(float64)
+		if !ok {
+			utils.RespWrap(w, http.StatusBadRequest, "option must be of type float")
+			return
+		}
+		data, err := gameSvc.Play(pl, utils.OptionTypeCast(optionFloat))
 		if err != nil {
 			utils.RespWrap(w, http.StatusBadRequest, err.Error())
 			return
@@ -102,7 +112,6 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 }
 
 func MakeGameHandlers(router *httprouter.Router, playerSvc *player.Service, gameSvc *game.Service) {
-	router.HandlerFunc("POST", "/api/bandersnatch/start", middleware.JwtAuth(StartGame(playerSvc, gameSvc)))
 	router.HandlerFunc("POST", "/api/bandersnatch/play", middleware.JwtAuth(Play(playerSvc, gameSvc)))
 }
 

@@ -201,3 +201,24 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 
 	return nil
 }
+
+func (n *Nexus) CheckIfPlayerExists(p *Player) bool {
+	if p == nil {
+		return false
+	}
+	_, ok := n.Players[p.Id]
+	return ok
+}
+
+func (n *Nexus) LoadGameState(p *Player) error {
+	if p == nil {
+		return pkg.ErrNilNode
+	}
+
+	if pl, ok := n.Players[p.Id]; ok {
+		*p = *pl
+		return nil
+	} else {
+		return pkg.ErrNotFound
+	}
+}

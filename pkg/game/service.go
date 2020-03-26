@@ -31,6 +31,13 @@ func (s *Service) Play(p *Player, opt Option) (*NodeData, error) {
 	return p.CurrentNode.Data, nil
 }
 
+func (s *Service) GetNodeData(p *Player) (*NodeData, error) {
+	if err := s.nexus.LoadGameState(p); err != nil {
+		return nil, err
+	}
+	return p.CurrentNode.Data, nil
+}
+
 func (s *Service) GetArtifacts(p *Player) ([]*entities.AbstractArtifact, error) {
 	player, ok := s.nexus.Players[p.Id]
 	if !ok {
@@ -42,4 +49,8 @@ func (s *Service) GetArtifacts(p *Player) ([]*entities.AbstractArtifact, error) 
 	}
 
 	return artifacts, nil
+}
+
+func (s *Service) CheckIfPlayerExists(p *Player) bool {
+	return s.nexus.CheckIfPlayerExists(p)
 }

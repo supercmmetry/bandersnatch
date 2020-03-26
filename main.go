@@ -86,6 +86,10 @@ func main() {
 		port = "1729"
 	}
 
+	r.HandlerFunc("POST", "/api/bandersnatch/health", func(w http.ResponseWriter, r *http.Request) {
+		utils.RespWrap(w, http.StatusOK, "Good")
+	})
+
 	log.WithField("event", "START").Info("Listening on port " + port)
 
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)
