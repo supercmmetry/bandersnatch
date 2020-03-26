@@ -5,7 +5,7 @@ type Player struct {
 	Email    string `json:"email" gorm:"primary_key"`
 	Name     string `json:"name" gorm:"not null"`
 	Password string `json:"password" gorm:"not null"`
-	MaxScore    uint64 `json:"score"`
+	MaxScore uint64 `json:"score"`
 }
 
 type AbstractArtifact struct {
