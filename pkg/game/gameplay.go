@@ -9,11 +9,10 @@ import (
 
 type Player struct {
 	Id                   uint64
-	ArtifactDistribution map[*Node]*Artifact
-	CurrentNode          *Node
-	CollectedArtifacts   map[*Artifact]struct{}
+	CurrentNode          Node
+	CollectedArtifacts   map[uint64]struct{}
 	TotalScore           uint64
-	VisitedNodeMap       map[*Node]struct{}
+	VisitedNodeMap       map[uint64]struct{}
 }
 
 type Nexus struct {
@@ -105,11 +104,14 @@ func (n *Nexus) Start(p *Player) error {
 	}
 	n.Players[p.Id] = &Player{Id: p.Id}
 	*p = *n.Players[p.Id]
-	p.VisitedNodeMap = make(map[*Node]struct{})
+	p.VisitedNodeMap = make(map[uint64]struct{})
 	// Assign a random leader node to the player.
 	p.TotalScore = 0
-	p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
-	p.CollectedArtifacts = make(map[*Artifact]struct{})
+
+
+	p.CurrentNode = *n.Leaders[rand.Intn(len(n.Leaders))]
+
+	p.CollectedArtifacts = make(map[uint64]struct{})
 	// Initialize Artifact-Distribution
 	*n.Players[p.Id] = *p
 	return nil
@@ -119,10 +121,10 @@ func (n *Nexus) InjectArtifacts(p *Player) {
 	// This is done to prevent game-state injection
 	*p = *n.Players[p.Id]
 	for _, id := range p.CurrentNode.ArtifactIds {
-		if _, ok := p.CollectedArtifacts[n.artifactMap[id]]; ok {
+		if _, ok := p.CollectedArtifacts[id]; ok {
 			continue
 		}
-		p.CollectedArtifacts[n.artifactMap[id]] = struct{}{}
+		p.CollectedArtifacts[id] = struct{}{}
 		p.TotalScore += n.artifactMap[id].Score
 	}
 	*n.Players[p.Id] = *p
@@ -130,7 +132,7 @@ func (n *Nexus) InjectArtifacts(p *Player) {
 
 func (n *Nexus) satisfiesDependency(target *Node, p *Player) bool {
 	for _, id := range target.RequiredArtifactIds {
-		if _, ok := p.CollectedArtifacts[n.artifactMap[id]]; !ok {
+		if _, ok := p.CollectedArtifacts[id]; !ok {
 			return false
 		}
 	}
@@ -169,7 +171,10 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 
 				if !n.satisfiesDependency(p.CurrentNode.LeftChild, p) {
 					if i == endId && cycleCompleted {
-						return pkg.ErrNoPathFound
+						// If no viable-node is found, then declare the node as a leaf-node
+						p.CurrentNode.IsLeaf = true
+						break
+						//return pkg.ErrNoPathFound
 					}
 					if i == endId {
 						cycleCompleted = true
@@ -181,7 +186,7 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 					cycleCompleted = true
 				}
 
-				if _, ok := p.VisitedNodeMap[p.CurrentNode.LeftChild]; !ok || cycleCompleted {
+				if _, ok := p.VisitedNodeMap[p.CurrentNode.LeftChild.Id]; !ok || cycleCompleted {
 					break
 				}
 			}
@@ -198,7 +203,10 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 
 				if !n.satisfiesDependency(p.CurrentNode.RightChild, p) {
 					if i == endId && cycleCompleted {
-						return pkg.ErrNoPathFound
+						// If no viable-node is found, then declare the node as a leaf-node
+						p.CurrentNode.IsLeaf = true
+						break
+						//return pkg.ErrNoPathFound
 					}
 					if i == endId {
 						cycleCompleted = true
@@ -210,7 +218,7 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 					cycleCompleted = true
 				}
 
-				if _, ok := p.VisitedNodeMap[p.CurrentNode.RightChild]; !ok || cycleCompleted {
+				if _, ok := p.VisitedNodeMap[p.CurrentNode.RightChild.Id]; !ok || cycleCompleted {
 					break
 				}
 			}
@@ -218,11 +226,11 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 	}
 
 	if p.CurrentNode.IsLeaf {
-		p.CurrentNode = n.Leaders[rand.Intn(len(n.Leaders))]
+		p.CurrentNode = *n.Leaders[rand.Intn(len(n.Leaders))]
 	} else {
-		p.CurrentNode = p.CurrentNode.Traverse(opt)
+		p.CurrentNode = *p.CurrentNode.Traverse(opt)
 	}
-	p.VisitedNodeMap[p.CurrentNode] = struct{}{}
+	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
 	*n.Players[p.Id] = *p
 	n.InjectArtifacts(p)
 
@@ -248,4 +256,8 @@ func (n *Nexus) LoadGameState(p *Player) error {
 	} else {
 		return pkg.ErrNotFound
 	}
+}
+
+func (n *Nexus) FetchArtifactById(id uint64) *Artifact {
+	return n.artifactMap[id]
 }

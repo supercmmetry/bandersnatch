@@ -28,7 +28,7 @@ type Node struct {
 	RandomizePath       bool
 }
 
-func (n *Node) Traverse(opt Option) *Node {
+func (n Node) Traverse(opt Option) *Node {
 	if opt == OptionLeft {
 		if n.LeftChild == nil {
 			return n.RightChild
