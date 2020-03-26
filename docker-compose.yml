@@ -50,14 +50,14 @@ services:
       - internal
 
   traefik:
-    image: "traefik:alpine"
+    image: "traefik:1.7.2-alpine"
     restart: always
     container_name: traefik
     ports:
       - "80:80"
       - "443:443"
     labels:
-      - traefik.frontend.rule=Host:playscenario.dscvit.com;PathPrefix:/dashboard
+      - traefik.basic.frontend.rule=Host:playscenario.dscvit.com
       - traefik.port=8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
