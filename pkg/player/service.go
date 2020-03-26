@@ -54,6 +54,9 @@ func (s *Service) Find(email string) (*entities.Player, error) {
 	return s.repo.Find(email)
 }
 
+func (s *Service) ViewLeaderboard() ([]entities.AbstractPlayer, error) {
+	return s.repo.ViewLeaderboard()
+}
 func NewService(r Repository) *Service {
 	return &Service{repo: r}
 }

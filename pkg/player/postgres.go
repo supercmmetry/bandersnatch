@@ -73,6 +73,23 @@ func (r *repo) Find(email string) (*entities.Player, error) {
 	return p, nil
 }
 
+func (r *repo) ViewLeaderboard() ([]entities.AbstractPlayer, error) {
+	tx := r.DB.Begin()
+	var scores []entities.AbstractPlayer
+
+	if rows, err := tx.Model(&entities.Player{}).Select("Name, Email, MaxScore").Order("MaxScore desc").Rows(); err != nil {
+		for rows.Next() {
+			var ap entities.AbstractPlayer
+			rows.Scan(&ap.Name, &ap.Email, &ap.MaxScore)
+			scores = append(scores, ap)
+		}
+	} else {
+		return nil, pkg.ErrDatabase
+	}
+	
+	return scores, nil
+}
+
 func NewPostgresRepo(db *gorm.DB) Repository {
 	return &repo{DB: db}
 }
