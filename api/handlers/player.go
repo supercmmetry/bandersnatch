@@ -25,6 +25,16 @@ func SignUp(playerSvc *player.Service) http.HandlerFunc {
 			return
 		}
 
+		if len(p.Name) == 0 {
+			utils.RespWrap(w, http.StatusBadRequest, "name field is empty")
+			return
+		}
+
+		if len(p.Password) == 0 {
+			utils.RespWrap(w, http.StatusBadRequest, "password field is empty")
+			return
+		}
+
 		token, err := playerSvc.SignUp(p)
 		if err != nil {
 			utils.RespWrap(w, http.StatusConflict, err.Error())
@@ -43,7 +53,7 @@ func SignUp(playerSvc *player.Service) http.HandlerFunc {
 }
 
 func SignIn(playerSvc *player.Service) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		p := &entities.Player{}
 		if err := json.NewDecoder(r.Body).Decode(p); err != nil {
 			utils.RespWrap(w, http.StatusBadRequest, err.Error())
@@ -90,7 +100,7 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 
 func ViewLeaderboard(playerSvc *player.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		leaders, err := playerSvc.ViewLeaderboard() 
+		leaders, err := playerSvc.ViewLeaderboard()
 		if err != nil {
 			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 			return
@@ -106,4 +116,3 @@ func MakePlayerHandlers(router *httprouter.Router, playerSvc *player.Service) {
 	router.HandlerFunc("POST", "/api/bandersnatch/signin", SignIn(playerSvc))
 	router.HandlerFunc("POST", "/api/bandersnatch/leaderboard", ViewLeaderboard(playerSvc))
 }
-
