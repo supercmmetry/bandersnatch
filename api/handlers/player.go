@@ -88,6 +88,8 @@ func SignIn(playerSvc *player.Service) http.HandlerFunc {
 	}
 }
 
+
+
 func MakePlayerHandlers(router *httprouter.Router, playerSvc *player.Service) {
 	router.HandlerFunc("POST", "/api/bandersnatch/signup", SignUp(playerSvc))
 	router.HandlerFunc("POST", "/api/bandersnatch/signin", SignIn(playerSvc))

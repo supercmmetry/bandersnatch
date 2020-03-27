@@ -14,7 +14,7 @@ type AbstractArtifact struct {
 }
 
 type AbstractPlayer struct {
-	Name    string `json:"name" gorm:"not null"`
-	Email	string `json:"email" gorm:"primary_key"`
-	MaxScore    uint64 `json:"score"`
+	Name     string `json:"name" gorm:"not null"`
+	Email    string `json:"email" gorm:"primary_key"`
+	MaxScore uint64 `json:"score"`
 }
