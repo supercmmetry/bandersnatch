@@ -7,8 +7,8 @@
         "left_option": "Leave it there.",
         "right_option": "Take it."
       },
-      "left_nodes": [2],
-      "right_nodes": [3, 2],
+      "left_nodes": [1,2],
+      "right_nodes": [1, 3],
       "is_leader": true
     },
     {
@@ -26,6 +26,8 @@
         "left_option": "Write a name.",
         "right_option": "Throw the notebook away."
       },
+      "left_nodes": [4,3],
+      "right_nodes": [4,3],
       "artifact_ids": [1],
       "required_artifact_ids": [2]
     },
@@ -37,8 +39,8 @@
         "right_option": "Turn down the request."
       },
       "is_leader": true,
-      "left_nodes": [5],
-      "right_nodes": [6]
+      "left_nodes": [5,4,6],
+      "right_nodes": [4,3]
     },
     {
       "id": 5,

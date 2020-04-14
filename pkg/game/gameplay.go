@@ -8,11 +8,11 @@ import (
 )
 
 type Player struct {
-	Id                   uint64
-	CurrentNode          Node
-	CollectedArtifacts   map[uint64]struct{}
-	TotalScore           uint64
-	VisitedNodeMap       map[uint64]struct{}
+	Id                 uint64
+	CurrentNode        Node
+	CollectedArtifacts map[uint64]struct{}
+	TotalScore         uint64
+	VisitedNodeMap     map[uint64]struct{}
 }
 
 type Nexus struct {
@@ -108,8 +108,8 @@ func (n *Nexus) Start(p *Player) error {
 	// Assign a random leader node to the player.
 	p.TotalScore = 0
 
-
 	p.CurrentNode = *n.Leaders[rand.Intn(len(n.Leaders))]
+	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
 
 	p.CollectedArtifacts = make(map[uint64]struct{})
 	// Initialize Artifact-Distribution
@@ -139,6 +139,48 @@ func (n *Nexus) satisfiesDependency(target *Node, p *Player) bool {
 	return true
 }
 
+func (n *Nexus) cyclicRefresh(p *Player) {
+	leftCycleCompleted := true
+	rightCycleCompleted := true
+
+	nodeIds := p.CurrentNode.LeftNodeIds
+	for _, id := range nodeIds {
+		if _, ok := p.VisitedNodeMap[id]; !ok && n.satisfiesDependency(n.Nodes[id-1], p) {
+			leftCycleCompleted = false
+			break
+		}
+	}
+
+	nodeIds = p.CurrentNode.RightNodeIds
+	for _, id := range nodeIds {
+		if _, ok := p.VisitedNodeMap[id]; !ok && n.satisfiesDependency(n.Nodes[id-1], p) {
+			rightCycleCompleted = false
+			break
+		}
+	}
+
+	// This means that we have visited all nodes in LRU, and we need to refresh them to counter
+	// starvation in the next pass, otherwise we would go to a random-node in every pass which could
+	// create starvation.
+	// For this we "unvisit" the candidate nodes.
+
+	if leftCycleCompleted {
+		for _, id := range p.CurrentNode.LeftNodeIds {
+			delete(p.VisitedNodeMap, id)
+		}
+	}
+	if rightCycleCompleted {
+		for _, id := range p.CurrentNode.RightNodeIds {
+			delete(p.VisitedNodeMap, id)
+		}
+	}
+
+	// Now we might have removed the currentNode from the LRU.
+	// So we resolve it by re-adding the current node in the LRU
+
+	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
+}
+
 func (n *Nexus) Traverse(p *Player, opt Option) error {
 	if p == nil {
 		return pkg.ErrNilNode
@@ -151,9 +193,13 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 	*p = *n.Players[p.Id]
 
 	if p.CurrentNode.RandomizePath {
+		// refresh LRU-cache to minimize starvation for next-pass.
+		n.cyclicRefresh(p)
+
 		if len(p.CurrentNode.LeftNodeIds) == 0 && len(p.CurrentNode.RightNodeIds) == 0 {
 			p.CurrentNode.IsLeaf = true
 		} else {
+			// left-right node resolution
 			if len(p.CurrentNode.LeftNodeIds) == 0 {
 				p.CurrentNode.LeftNodeIds = p.CurrentNode.RightNodeIds
 			}
@@ -165,7 +211,7 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 			length := len(p.CurrentNode.LeftNodeIds)
 			randId := rand.Intn(length)
 			cycleCompleted := false
-			endId := (randId+length-1)%length
+			endId := (randId + length - 1) % length
 			for i := randId; ; i = (i + 1) % length {
 				p.CurrentNode.LeftChild = n.Nodes[p.CurrentNode.LeftNodeIds[i]-1]
 
@@ -174,7 +220,6 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 						// If no viable-node is found, then declare the node as a leaf-node
 						p.CurrentNode.IsLeaf = true
 						break
-						//return pkg.ErrNoPathFound
 					}
 					if i == endId {
 						cycleCompleted = true
@@ -194,19 +239,16 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 			length = len(p.CurrentNode.RightNodeIds)
 			randId = rand.Intn(length)
 			cycleCompleted = false
-			endId = (randId+length-1)%length
+			endId = (randId + length - 1) % length
 
 			for i := randId; ; i = (i + 1) % length {
 				p.CurrentNode.RightChild = n.Nodes[p.CurrentNode.RightNodeIds[i]-1]
-
-
 
 				if !n.satisfiesDependency(p.CurrentNode.RightChild, p) {
 					if i == endId && cycleCompleted {
 						// If no viable-node is found, then declare the node as a leaf-node
 						p.CurrentNode.IsLeaf = true
 						break
-						//return pkg.ErrNoPathFound
 					}
 					if i == endId {
 						cycleCompleted = true
@@ -230,7 +272,9 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 	} else {
 		p.CurrentNode = *p.CurrentNode.Traverse(opt)
 	}
+
 	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
+
 	*n.Players[p.Id] = *p
 	n.InjectArtifacts(p)
 

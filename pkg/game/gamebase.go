@@ -43,7 +43,7 @@ func (n Node) Traverse(opt Option) *Node {
 }
 
 type Artifact struct {
-	Id           uint64   `json:"id"`
-	Description  string   `json:"description"`
-	Score        uint64   `json:"score"`
+	Id          uint64 `json:"id"`
+	Description string `json:"description"`
+	Score       uint64 `json:"score"`
 }
