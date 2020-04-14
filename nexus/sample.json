@@ -5,7 +5,14 @@
       "data": {
         "question": "There is a death-note in front of you. What will you do ?",
         "left_option": "Leave it there.",
-        "right_option": "Take it."
+        "right_option": "Take it.",
+        "misc": {
+          "room": "outside",
+          "sub-category": {
+            "x1": 10,
+            "x2": 20
+          }
+        }
       },
       "left_nodes": [1,2],
       "right_nodes": [1, 3],
@@ -24,7 +31,8 @@
       "data": {
         "question": "The death note says, if you write anyone's name on it, the mentioned person shall die of an heart attack.",
         "left_option": "Write a name.",
-        "right_option": "Throw the notebook away."
+        "right_option": "Throw the notebook away.",
+        "misc": {"room": "outside"}
       },
       "left_nodes": [4,3],
       "right_nodes": [4,3],

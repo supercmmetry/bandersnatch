@@ -8,9 +8,10 @@ const (
 )
 
 type NodeData struct {
-	Question    string `json:"question"`
-	LeftOption  string `json:"left_option"`
-	RightOption string `json:"right_option"`
+	Question      string                 `json:"question"`
+	LeftOption    string                 `json:"left_option"`
+	RightOption   string                 `json:"right_option"`
+	Miscellaneous map[string]interface{} `json:"misc"`
 }
 
 type Node struct {
