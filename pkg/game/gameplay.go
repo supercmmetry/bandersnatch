@@ -136,6 +136,14 @@ func (n *Nexus) satisfiesDependency(target *Node, p *Player) bool {
 			return false
 		}
 	}
+
+	// Check for anti-requisite artifacts
+	for _, id := range target.AntiRequisiteArtifactIds {
+		if _, ok := p.CollectedArtifacts[id]; ok {
+			return false
+		}
+	}
+
 	return true
 }
 

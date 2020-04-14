@@ -32,12 +32,15 @@
         "question": "The death note says, if you write anyone's name on it, the mentioned person shall die of an heart attack.",
         "left_option": "Write a name.",
         "right_option": "Throw the notebook away.",
-        "misc": {"room": "outside"}
+        "misc": {
+          "room": "outside"
+        }
       },
       "left_nodes": [4,3],
       "right_nodes": [4,3],
       "artifact_ids": [1],
-      "required_artifact_ids": [2]
+      "required_artifact_ids": [2],
+      "anti_requisite_artifact_ids": [1]
     },
     {
       "id": 4,
