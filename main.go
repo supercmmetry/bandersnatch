@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
 	"github.com/lib/pq"
+	"github.com/rs/cors"
 	negronilogrus "github.com/meatballhat/negroni-logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
@@ -92,7 +93,9 @@ func main() {
 
 	log.WithField("event", "START").Info("Listening on port " + port)
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)
+	corsHandler := cors.Default().Handler(r)
+
+	err := http.ListenAndServe(fmt.Sprintf(":%s", port), corsHandler)
 	if err != nil {
 		log.Fatal(err)
 		return
