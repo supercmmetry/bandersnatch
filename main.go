@@ -93,13 +93,16 @@ func main() {
 
 	log.WithField("event", "START").Info("Listening on port " + port)
 
-	corsWare := cors.New(cors.Options{
+
+	c := cors.New(cors.Options{
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{http.MethodGet, http.MethodPost},
 	})
 
-	err := http.ListenAndServe(fmt.Sprintf(":%s", port), corsWare.Handler(r))
+	handler := c.Handler(r)
+
+	err := http.ListenAndServe(fmt.Sprintf(":%s", port), handler)
 	if err != nil {
 		log.Fatal(err)
 		return

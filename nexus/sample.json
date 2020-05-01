@@ -3,10 +3,10 @@
     {
       "id": 1,
       "data": {
-        "question": "There is a death-note in front of you. What will you do ?",
-        "left_option": "Leave it there.",
-        "right_option": "Take it.",
+        "content": "There is a death-note in front of you. What will you do ?",
         "misc": {
+          "left_option": "Leave it there.",
+          "right_option": "Take it.",
           "room": "outside",
           "sub-category": {
             "x1": 10,
@@ -21,18 +21,20 @@
     {
       "id": 2,
       "data": {
-        "question": "Where do you want to go now ?",
-        "left_option": "Home",
-        "right_option": "School"
+        "content": "Where do you want to go now ?",
+        "misc": {
+          "left_option": "Home",
+          "right_option": "School"
+        }
       }
     },
     {
       "id": 3,
       "data": {
-        "question": "The death note says, if you write anyone's name on it, the mentioned person shall die of an heart attack.",
-        "left_option": "Write a name.",
-        "right_option": "Throw the notebook away.",
+        "content": "The death note says, if you write anyone's name on it, the mentioned person shall die of an heart attack.",
         "misc": {
+          "left_option": "Write a name.",
+          "right_option": "Throw the notebook away.",
           "room": "outside"
         }
       },
@@ -45,9 +47,11 @@
     {
       "id": 4,
       "data": {
-        "question": "People are dying of heart attacks without any plausible reason. L has requested you to investigate this singularity. What will you do ?",
-        "left_option": "Start investigating.",
-        "right_option": "Turn down the request."
+        "content": "People are dying of heart attacks without any plausible reason. L has requested you to investigate this singularity. What will you do ?",
+        "misc": {
+          "left_option": "Start investigating.",
+          "right_option": "Turn down the request."
+        }
       },
       "is_leader": true,
       "left_nodes": [5,4,6],
@@ -56,18 +60,22 @@
     {
       "id": 5,
       "data": {
-        "question": "It seems as though the unexpected deaths happen after school hours. What will you do ?",
-        "left_option": "Investigate in schools.",
-        "right_option": "Search for more clues."
+        "content": "It seems as though the unexpected deaths happen after school hours. What will you do ?",
+        "misc": {
+          "left_option": "Investigate in schools.",
+          "right_option": "Search for more clues."
+        }
       },
       "artifact_ids": [2]
     },
     {
       "id": 6,
       "data": {
-        "question": "You are in school right now. You find Lite Yagami to be writing something in a very rusty notebook. What will you do ?",
-        "left_option": "Ask Lite Yagami about what he is writing.",
-        "right_option": "Sneak up from behind and observe what he is writing."
+        "content": "You are in school right now. You find Lite Yagami to be writing something in a very rusty notebook. What will you do ?",
+        "misc": {
+          "left_option": "Ask Lite Yagami about what he is writing.",
+          "right_option": "Sneak up from behind and observe what he is writing."
+        }
       }
     }
   ],
@@ -75,12 +83,16 @@
     {
       "id": 1,
       "score": 37,
-      "description": "1337-h@@x"
+      "misc": {
+        "description": "1337-h@@x"
+      }
     },
     {
       "id": 2,
       "score": 73,
-      "description": "spotify-superuser"
+      "misc": {
+        "description": "spotify-superuser"
+      }
     }
   ]
 }

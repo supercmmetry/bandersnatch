@@ -8,9 +8,7 @@ const (
 )
 
 type NodeData struct {
-	Question      string                 `json:"question"`
-	LeftOption    string                 `json:"left_option"`
-	RightOption   string                 `json:"right_option"`
+	Content       string                 `json:"content"`
 	Miscellaneous map[string]interface{} `json:"misc"`
 }
 
@@ -45,7 +43,7 @@ func (n Node) Traverse(opt Option) *Node {
 }
 
 type Artifact struct {
-	Id          uint64 `json:"id"`
-	Description string `json:"description"`
-	Score       uint64 `json:"score"`
+	Id            uint64                 `json:"id"`
+	Miscellaneous map[string]interface{} `json:"misc"`
+	Score         uint64                 `json:"score"`
 }
