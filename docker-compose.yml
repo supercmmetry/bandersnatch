@@ -25,7 +25,7 @@ services:
       - traefik.docker.network=web
       - traefik.port=1729
     volumes:
-      - ./nexus/sample.json:/nexus/sample.json
+      - ./nexus:/nexus
     networks:
       - web
       - internal
