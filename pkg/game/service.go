@@ -46,7 +46,7 @@ func (s *Service) GetArtifacts(p *Player) ([]*entities.AbstractArtifact, error) 
 	artifacts := make([]*entities.AbstractArtifact, 0)
 	for id := range player.CollectedArtifacts {
 		k := s.nexus.FetchArtifactById(id)
-		artifacts = append(artifacts, &entities.AbstractArtifact{Id: k.Id, Description: k.Description})
+		artifacts = append(artifacts, &entities.AbstractArtifact{Id: k.Id, Miscellaneous: k.Miscellaneous})
 	}
 
 	return artifacts, nil

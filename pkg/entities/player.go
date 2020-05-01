@@ -9,8 +9,8 @@ type Player struct {
 }
 
 type AbstractArtifact struct {
-	Id          uint64 `json:"id"`
-	Description string `json:"description"`
+	Id            uint64                 `json:"id"`
+	Miscellaneous map[string]interface{} `json:"misc"`
 }
 
 type AbstractPlayer struct {
