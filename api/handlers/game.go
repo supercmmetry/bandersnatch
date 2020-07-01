@@ -124,7 +124,56 @@ func Play(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
 	}
 }
 
+func GetHint(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		tk := ctx.Value(middleware.JwtContextKey("token")).(*middleware.Token)
+
+		p, err := playerSvc.Find(tk.Email)
+		if err != nil {
+			switch err {
+			case pkg.ErrNotFound:
+				utils.RespWrap(w, http.StatusNotFound, "player not found")
+			default:
+				utils.RespWrap(w, http.StatusInternalServerError, err.Error())
+			}
+			return
+		}
+
+		if tk.Id != p.Id {
+			utils.RespWrap(w, http.StatusForbidden, "player id mismatch")
+			return
+		}
+
+		jsonMap := make(map[string]interface{})
+		if err := json.NewDecoder(r.Body).Decode(&jsonMap); err != nil {
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		
+		pl := &game.Player{Id:p.Id}
+		if !gameSvc.CheckIfPlayerExists(pl) {
+			utils.RespWrap(w, http.StatusForbidden, "player not found")
+			return	
+		}
+
+		nid, err := gameSvc.GetNodeId(pl)
+		if err != nil {
+			utils.RespWrap(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		if hint, err := gameSvc.GetHint(pl, nid); err != nil {
+
+		}
+		
+		w.WriteHeader(http.StatusOK)
+		utils.Wrap(w, map[string]interface{}{"hint": hint})
+	}
+}
+
 func MakeGameHandlers(router *httprouter.Router, playerSvc *player.Service, gameSvc *game.Service) {
 	router.HandlerFunc("POST", "/api/bandersnatch/play", middleware.JwtAuth(Play(playerSvc, gameSvc)))
+	router.HandlerFunc("POST", "/api/bandersnatch/hint", middleware.JwtAuth(Play(playerSvc, gameSvc)))
 }
 
