@@ -24,6 +24,23 @@ type Nexus struct {
 	artifactNodes map[*Node][]*Node // maps a leader node to a list of potential artifact nodes under the leader node.
 }
 
+type HintData struct {
+	Hint []*Hint `json:"hints"`
+}
+
+func (h* HintData) LoadFromFile(filename string) error {
+	r, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+
+	if err := json.NewDecoder(r).Decode(h); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (n *Nexus) LoadFromFile(filename string) error {
 	r, err := os.Open(filename)
 	if err != nil {

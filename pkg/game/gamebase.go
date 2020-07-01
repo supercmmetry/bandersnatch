@@ -28,6 +28,15 @@ type Node struct {
 	RandomizePath            bool
 }
 
+type Hint struct {
+	Type		string `json:"Type of Hint"`
+	Penalty		uint64 `json:"Points Deducted"`
+	Difficulty	uint64 `json:"Difficulty Level"`
+	NodeID		uint64 `json:"Node ID"`
+	HintID		uint64 `json:"Hint ID"`
+	Text		string `json:"Hint Content"`
+}
+
 func (n Node) Traverse(opt Option) *Node {
 	if opt == OptionLeft {
 		if n.LeftChild == nil {
