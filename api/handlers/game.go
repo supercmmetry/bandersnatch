@@ -170,7 +170,7 @@ func GetHint(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc 
 		}
 
 		w.WriteHeader(http.StatusOK)
-		utils.Wrap(w, map[string]interface{}{"hint": hint, "score": pl.TotalScore})
+		utils.Wrap(w, map[string]interface{}{"hint": hint.Text, "score": pl.TotalScore})
 	}
 }
 
