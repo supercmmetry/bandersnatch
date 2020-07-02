@@ -9,4 +9,6 @@ var (
 	ErrNotFound = errors.New("record not found")
 	ErrInvalidOperation = errors.New("invalid operation")
 	ErrNoPathFound = errors.New("no possible path found")
+	ErrNoHintFound = errors.New("no hint found")
+	ErrInsufficientScore = errors.New("insufficient score")
 )

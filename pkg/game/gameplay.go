@@ -12,7 +12,14 @@ type Player struct {
 	CurrentNode        Node
 	CollectedArtifacts map[uint64]struct{}
 	TotalScore         uint64
+	CycleMap           map[uint64]struct{}
 	VisitedNodeMap     map[uint64]struct{}
+	HintIdx            uint8
+}
+
+type HintKey struct {
+	NodeId  uint64
+	HintIdx uint8
 }
 
 type Nexus struct {
@@ -22,13 +29,14 @@ type Nexus struct {
 	Artifacts     []*Artifact `json:"artifacts"`
 	artifactMap   map[uint64]*Artifact
 	artifactNodes map[*Node][]*Node // maps a leader node to a list of potential artifact nodes under the leader node.
+	HintMap       map[HintKey]Hint
 }
 
 type HintData struct {
-	Hint []*Hint `json:"hints"`
+	Hints []*Hint `json:"hints"`
 }
 
-func (h* HintData) LoadFromFile(filename string) error {
+func (h *HintData) LoadFromFile(filename string) error {
 	r, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -57,11 +65,28 @@ func (n *Nexus) LoadFromFile(filename string) error {
 	return nil
 }
 
+func (n *Nexus) LoadHintsFromFile(filename string) error {
+	hintData := HintData{}
+	if err := hintData.LoadFromFile(filename); err != nil {
+		return err
+	}
+
+	n.HintMap = make(map[HintKey]Hint)
+
+	for _, hint := range hintData.Hints {
+		n.HintMap[HintKey{hint.NodeID, hint.HintIdx}] = *hint
+
+	}
+
+	return nil
+}
+
 func (n *Nexus) createDyraStat() {
 	// we iterate through each node in the nexus to generate a dyrastat
 	nodeMap := make(map[uint64]*Node)
 	for _, node := range n.Nodes {
 		nodeMap[node.Id] = node
+
 		if len(node.LeftNodeIds) > 1 || len(node.RightNodeIds) > 1 {
 			node.RandomizePath = true
 		}
@@ -121,11 +146,13 @@ func (n *Nexus) Start(p *Player) error {
 	}
 	n.Players[p.Id] = &Player{Id: p.Id}
 	*p = *n.Players[p.Id]
+	p.CycleMap = make(map[uint64]struct{})
 	p.VisitedNodeMap = make(map[uint64]struct{})
 	// Assign a random leader node to the player.
 	p.TotalScore = 0
 
 	p.CurrentNode = *n.Leaders[rand.Intn(len(n.Leaders))]
+	p.CycleMap[p.CurrentNode.Id] = struct{}{}
 	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
 
 	p.CollectedArtifacts = make(map[uint64]struct{})
@@ -170,7 +197,7 @@ func (n *Nexus) cyclicRefresh(p *Player) {
 
 	nodeIds := p.CurrentNode.LeftNodeIds
 	for _, id := range nodeIds {
-		if _, ok := p.VisitedNodeMap[id]; !ok && n.satisfiesDependency(n.Nodes[id-1], p) {
+		if _, ok := p.CycleMap[id]; !ok && n.satisfiesDependency(n.Nodes[id-1], p) {
 			leftCycleCompleted = false
 			break
 		}
@@ -178,7 +205,7 @@ func (n *Nexus) cyclicRefresh(p *Player) {
 
 	nodeIds = p.CurrentNode.RightNodeIds
 	for _, id := range nodeIds {
-		if _, ok := p.VisitedNodeMap[id]; !ok && n.satisfiesDependency(n.Nodes[id-1], p) {
+		if _, ok := p.CycleMap[id]; !ok && n.satisfiesDependency(n.Nodes[id-1], p) {
 			rightCycleCompleted = false
 			break
 		}
@@ -191,19 +218,19 @@ func (n *Nexus) cyclicRefresh(p *Player) {
 
 	if leftCycleCompleted {
 		for _, id := range p.CurrentNode.LeftNodeIds {
-			delete(p.VisitedNodeMap, id)
+			delete(p.CycleMap, id)
 		}
 	}
 	if rightCycleCompleted {
 		for _, id := range p.CurrentNode.RightNodeIds {
-			delete(p.VisitedNodeMap, id)
+			delete(p.CycleMap, id)
 		}
 	}
 
 	// Now we might have removed the currentNode from the LRU.
 	// So we resolve it by re-adding the current node in the LRU
 
-	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
+	p.CycleMap[p.CurrentNode.Id] = struct{}{}
 }
 
 func (n *Nexus) Traverse(p *Player, opt Option) error {
@@ -256,7 +283,7 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 					cycleCompleted = true
 				}
 
-				if _, ok := p.VisitedNodeMap[p.CurrentNode.LeftChild.Id]; !ok || cycleCompleted {
+				if _, ok := p.CycleMap[p.CurrentNode.LeftChild.Id]; !ok || cycleCompleted {
 					break
 				}
 			}
@@ -285,7 +312,7 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 					cycleCompleted = true
 				}
 
-				if _, ok := p.VisitedNodeMap[p.CurrentNode.RightChild.Id]; !ok || cycleCompleted {
+				if _, ok := p.CycleMap[p.CurrentNode.RightChild.Id]; !ok || cycleCompleted {
 					break
 				}
 			}
@@ -298,12 +325,41 @@ func (n *Nexus) Traverse(p *Player, opt Option) error {
 		p.CurrentNode = *p.CurrentNode.Traverse(opt)
 	}
 
+	// Increment total score by one if a new node is visited.
+	// Reset HintIdx to 0
+	if _, ok := p.VisitedNodeMap[p.CurrentNode.Id]; !ok {
+		p.TotalScore += 1
+	}
+
+	p.HintIdx = 0
+
+	p.CycleMap[p.CurrentNode.Id] = struct{}{}
 	p.VisitedNodeMap[p.CurrentNode.Id] = struct{}{}
 
 	*n.Players[p.Id] = *p
 	n.InjectArtifacts(p)
 
 	return nil
+}
+
+func (n *Nexus) GetHint(p *Player) (*Hint, error) {
+	player := n.Players[p.Id]
+
+	hint, ok := n.HintMap[HintKey{player.CurrentNode.Id, player.HintIdx}]
+	if !ok {
+		return nil, pkg.ErrNoHintFound
+	}
+
+	if player.TotalScore < hint.Penalty {
+		return nil, pkg.ErrInsufficientScore
+	} else {
+		player.TotalScore -= hint.Penalty
+		player.HintIdx += 1
+	}
+
+	*n.Players[p.Id] = *player
+
+	return &hint, nil
 }
 
 func (n *Nexus) CheckIfPlayerExists(p *Player) bool {

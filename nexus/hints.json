@@ -1,0 +1,18 @@
+{
+  "hints": [
+    {
+      "type_of_hint": "Test",
+      "node_id": 1,
+      "hint_id": 0,
+      "content": "Pick it",
+      "penalty": 0
+    },
+    {
+      "type_of_hint": "Test",
+      "node_id": 1,
+      "hint_id": 1,
+      "content": "Pick the f*cking notebook, b*tch",
+      "penalty": 3
+    }
+  ]
+}

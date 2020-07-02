@@ -12,8 +12,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
 	"github.com/lib/pq"
-	"github.com/rs/cors"
 	negronilogrus "github.com/meatballhat/negroni-logrus"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 	"net/http"
@@ -65,6 +65,11 @@ func main() {
 
 	nexus := &game.Nexus{}
 	if err := nexus.LoadFromFile(os.Getenv("NEXUS_FILE")); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if err := nexus.LoadHintsFromFile(os.Getenv("HINTS_FILE")); err != nil {
 		log.Fatal(err)
 		return
 	}

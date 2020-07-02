@@ -157,23 +157,25 @@ func GetHint(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc 
 			return	
 		}
 
-		nid, err := gameSvc.GetNodeId(pl)
+		hint, err := gameSvc.GetHint(pl)
+
 		if err != nil {
-			utils.RespWrap(w, http.StatusBadRequest, err.Error())
+			utils.RespWrap(w, http.StatusConflict, err.Error())
 			return
 		}
 
-		if hint, err := gameSvc.GetHint(pl, nid); err != nil {
 
+		if _, err := gameSvc.GetNodeData(pl); err != nil {
+			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
 		}
-		
+
 		w.WriteHeader(http.StatusOK)
-		utils.Wrap(w, map[string]interface{}{"hint": hint})
+		utils.Wrap(w, map[string]interface{}{"hint": hint, "score": pl.TotalScore})
 	}
 }
 
 func MakeGameHandlers(router *httprouter.Router, playerSvc *player.Service, gameSvc *game.Service) {
 	router.HandlerFunc("POST", "/api/bandersnatch/play", middleware.JwtAuth(Play(playerSvc, gameSvc)))
-	router.HandlerFunc("POST", "/api/bandersnatch/hint", middleware.JwtAuth(Play(playerSvc, gameSvc)))
+	router.HandlerFunc("POST", "/api/bandersnatch/hint", middleware.JwtAuth(GetHint(playerSvc, gameSvc)))
 }
 

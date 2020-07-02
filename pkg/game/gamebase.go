@@ -26,15 +26,15 @@ type Node struct {
 	IsLeader                 bool     `json:"is_leader"`
 	IsLeaf                   bool     `json:"is_leaf"`
 	RandomizePath            bool
+	HintIdx                  uint8
 }
 
 type Hint struct {
-	Type		string `json:"Type of Hint"`
-	Penalty		uint64 `json:"Points Deducted"`
-	Difficulty	uint64 `json:"Difficulty Level"`
-	NodeID		uint64 `json:"Node ID"`
-	HintID		uint64 `json:"Hint ID"`
-	Text		string `json:"Hint Content"`
+	Type       string `json:"type_of_hint"`
+	Penalty    uint64 `json:"penalty"`
+	NodeID     uint64 `json:"node_id"`
+	HintIdx    uint8 `json:"hint_id"`
+	Text       string `json:"content"`
 }
 
 func (n Node) Traverse(opt Option) *Node {
