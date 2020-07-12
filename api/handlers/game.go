@@ -144,12 +144,6 @@ func GetHint(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc 
 			utils.RespWrap(w, http.StatusForbidden, "player id mismatch")
 			return
 		}
-
-		jsonMap := make(map[string]interface{})
-		if err := json.NewDecoder(r.Body).Decode(&jsonMap); err != nil {
-			utils.RespWrap(w, http.StatusBadRequest, err.Error())
-			return
-		}
 		
 		pl := &game.Player{Id:p.Id}
 		if !gameSvc.CheckIfPlayerExists(pl) {
@@ -163,7 +157,6 @@ func GetHint(playerSvc *player.Service, gameSvc *game.Service) http.HandlerFunc 
 			utils.RespWrap(w, http.StatusConflict, err.Error())
 			return
 		}
-
 
 		if _, err := gameSvc.GetNodeData(pl); err != nil {
 			utils.RespWrap(w, http.StatusInternalServerError, err.Error())
