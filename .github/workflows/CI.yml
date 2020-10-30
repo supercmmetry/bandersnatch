@@ -17,11 +17,13 @@ jobs:
       - name: Setup docker
         uses: docker-practice/actions-setup-docker@0.0.1
 
-      - name: Publish to Registry
-        env:
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_PERSONAL_ACCESS_TOKEN }}
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish
         run: |
-          echo $DOCKER_PASSWORD | docker login -u="$DOCKER_USERNAME" --password-stdin
           docker image build -t supercmmetry/bandersnatch:latest -f ./ops/images/go.Dockerfile .
           docker push supercmmetry/bandersnatch:latest
